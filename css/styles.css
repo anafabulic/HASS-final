@@ -78,8 +78,9 @@ https://www.lab21.gr/blog/simple-responsive-grid-system-without-using-bootstrap/
 /* Map styling */
 #basemap {
     fill-opacity: 0.7;
-    stroke: var(--fg4);
-    stroke-width: 0.6px;
+    fill: var(--bg4);
+    stroke: var(--bg0);
+    stroke-width: 0.7px;
 }
 .tooltip {
     position: absolute;

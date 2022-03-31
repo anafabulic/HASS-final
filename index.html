@@ -77,10 +77,6 @@
 // Define dimensions
 let w = 1000, h = 600, gutter = 20;
 
-// Define URIs
-let basemap_uri = "";
-let busstop_uri = "";
-
 // Define d3 selections
 let svg_ab = d3.select("svg#all_buses")
     .attr("viewBox", `0 0 ${w} ${h}`);
@@ -91,7 +87,81 @@ let svg_rl = d3.select("svg#route_lengths")
 let svg_rv = d3.select("svg#route_viewer")
     .attr("viewBox", `0 0 ${w} ${h}`);
 
+// Define URIs
+let basemap_uri = "https://raw.githubusercontent.com/anafabulic/HASS-final/main/json/sg_plnarea_simple.geojson";
+let data_uri = "https://raw.githubusercontent.com/anafabulic/HASS-final/main/json/service_summary.json";
 
+
+Promise.all([d3.json(data_uri), d3.json(basemap_uri)]).then(data => {
+    
+    // Define variables/objects; rewind data[0] as basemap
+    let routes = data[0];
+    let basemap = data[1];
+    let basemap_r = basemap.features;
+    for (let i = 0; i < basemap_r.length; i++) {
+        if (basemap_r[i].geometry.type == "MultiPolygon") {
+            for (let j = 0; j < basemap_r[i].geometry.coordinates.length; j++) {
+                basemap_r[i].geometry.coordinates[j][0].reverse();
+            }
+        } else {
+            basemap_r[i].geometry.coordinates[0].reverse();
+        }
+    }; 
+    basemap.features = basemap_r;
+
+    console.log(basemap);
+    console.log(routes);
+
+    // 1. Drawing svg all_buses
+        
+    // Define d3 projection
+    let projection = d3.geoMercator()
+        .fitExtent(
+            [
+                [gutter, gutter],
+                [w - gutter, h - gutter]
+            ],
+            basemap
+        );
+    let geopath = d3.geoPath().projection(projection);
+
+    // Draw map
+
+    svg_ab.append("g")
+        .attr("id", "basemap")
+        .selectAll("path")
+        .data(basemap.features)
+        .enter()
+        .append("path")
+        .attr("d", geopath);
+    
+    // Construct bus stop array
+    let stops_l = [];
+    let stops_c = {};
+    routes.forEach(function(route) {
+        route.stops.forEach(function(item) {
+            stops_l.push(
+                {
+                    "stop": item.stop,
+                    "latitude": item.latitude,
+                    "longitude": item.longitude,
+                }
+            );
+        });
+    });
+    console.log(stops_l);
+    stops_l.forEach(function(item) {
+        l = Object.keys(stops_c)
+        if (!l.includes(item.stop)) {
+            stops_c[item.stop] = 1;
+        } else {
+            stops_c[item.stop] += 1 ;
+        };
+    });
+    console.log(stops_c);
+
+
+});
 
 </script>
 
