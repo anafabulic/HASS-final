@@ -1,0 +1,10 @@
+@font-face {
+    font-family: 'Lato';
+    src: url('./lato-v22-latin-300.eot');
+    src: url('./lato-v22-latin-300.eot?#iefix') format('embedded-opentype'),
+         url('./lato-v22-latin-300.woff') format('woff'),
+         url('./lato-v22-latin-300.ttf') format('truetype');
+
+    font-weight: normal;
+    font-style: normal;
+}

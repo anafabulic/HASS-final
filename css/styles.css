@@ -1,0 +1,90 @@
+
+/* Import fonts */
+@import url(./fonts/libre-franklin/libre-franklin.css);
+@import url(./fonts/lato/lato.css);
+
+/* General styling */
+body {
+    /*
+        Gruvbox colors by Pavel Pertsev:
+        https://github.com/morhetz/gruvbox
+    */
+    --bg0: #fbf1c7;   --fg0: #282828;
+    --bg1: #ebdbb2;   --fg1: #3c3836;
+    --bg2: #d5c4a1;   --fg2: #504945;
+    --bg3: #bdae93;   --fg3: #665c54;
+    --bg4: #a89984;   --fg4: #7c6f64;
+    --red: #cc241d; --red_d: #9d0006;
+    --org: #d65d0e; --org_d: #af3a03;
+    --ylw: #d79921; --ylw_d: #b57614;
+    --grn: #98971a; --grn_d: #79740e;
+    --blu: #458588; --blu_d: #076678;
+    --prp: #b16286; --prp_d: #8f3f71;
+    --aqa: #689d6a; --aqa_d: #427b58;
+    --gry: #7c6f64; --gry_d: #928374;
+
+    background: var(--bg0);
+    color: var(--fg0);
+    font-family: 'Lato', 'Segoe UI Light', 'Gill Sans', sans-serif;
+    font-size: 1.2em;
+}
+h1 {
+    font-family: 'Libre Franklin';
+    font-weight: bold;
+    text-align: left;
+}
+p {
+    line-height: 1.7em;
+    text-align: justify;
+}
+a:link    {color: var(--org_d); text-decoration: none;}
+a:visited {color: var(--red); }
+a:hover   {color: var(--org); }
+
+/* Responsive grids
+   
+Adapted from Lab21 - atomweight grid system
+https://www.lab21.gr/blog/simple-responsive-grid-system-without-using-bootstrap/
+
+*/
+.block {
+    display: block;
+    padding: 0;
+    margin-bottom: 0px;
+}
+.grid {
+    width: 80%;
+    max-width: 900px;
+    margin: 0 auto;
+}
+.gutter {
+    margin-left: 30px;
+    margin-right: 30px;
+}
+.col-25 {width: 25.0%; float: left;}
+.col-33 {width: 33.3%; float: left;}
+.col-50 {width: 50.0%; float: left;}
+.clear {
+    clear: both;
+    display: block;
+}
+@media all and (max-width:800px) {
+    .col-33, .col-25 {width: 50%;}
+}
+@media all and (max-width:600px) {
+    .col-50, .col-33, .col-25 {width: 100%; float: none;}
+}  
+
+/* Map styling */
+#basemap {
+    fill-opacity: 0.7;
+    stroke: var(--fg4);
+    stroke-width: 0.6px;
+}
+.tooltip {
+    position: absolute;
+    text-align: left;
+    margin: 0.5em;
+    padding: 0.125em;
+    background: var(--bg0);
+}

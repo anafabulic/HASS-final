@@ -1,0 +1,10 @@
+@font-face {
+    font-family: 'Libre Franklin';
+    src: url('./libre-franklin-v11-latin-600.eot');
+    src: url('./libre-franklin-v11-latin-600?#iefix') format('embedded-opentype'),
+         url('./libre-franklin-v11-latin-600.woff') format('woff'),
+         url('./libre-franklin-v11-latin-600.ttf') format('truetype');
+
+    font-weight: normal;
+    font-style: normal;
+}
