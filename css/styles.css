@@ -26,7 +26,7 @@ body {
     background: var(--bg0);
     color: var(--fg0);
     font-family: 'Lato', 'Segoe UI Light', 'Gill Sans', sans-serif;
-    font-size: 1.2em;
+    font-size: 1.8em;
 }
 h1 {
     font-family: 'Libre Franklin';
@@ -34,7 +34,7 @@ h1 {
     text-align: left;
 }
 p {
-    line-height: 1.7em;
+    line-height: 1.8em;
     text-align: justify;
 }
 a:link    {color: var(--org_d); text-decoration: none;}
@@ -54,7 +54,7 @@ https://www.lab21.gr/blog/simple-responsive-grid-system-without-using-bootstrap/
 }
 .grid {
     width: 80%;
-    max-width: 900px;
+    max-width: 1200px;
     margin: 0 auto;
 }
 .gutter {
@@ -68,23 +68,40 @@ https://www.lab21.gr/blog/simple-responsive-grid-system-without-using-bootstrap/
     clear: both;
     display: block;
 }
-@media all and (max-width:800px) {
+@media all and (max-width:1200px) {
+    body {font-size: 1.50em;}
     .col-33, .col-25 {width: 50%;}
 }
 @media all and (max-width:600px) {
+    body {font-size: 1.25em;}
     .col-50, .col-33, .col-25 {width: 100%; float: none;}
 }  
 
 /* Map styling */
-#basemap {
+.basemap {
     fill-opacity: 0.7;
-    fill: var(--bg4);
+    fill: var(--bg3);
     stroke: var(--bg0);
+    stroke-width: 1.0px;
+}
+.svg_ab_pts {
+    fill-opacity: 0.8;
+}
+.svg_ls_ln {
+    fill: none;
+    stroke-width: 1.8px;
+    stroke: orangered;
+}
+.svg_ls_ptr {
+    fill: none;
     stroke-width: 0.7px;
+    stroke: var(--fg2);
+    stroke-opacity: 0.5px;
 }
 .tooltip {
     position: absolute;
     text-align: left;
+    font-size: 0.5em;
     margin: 0.5em;
     padding: 0.125em;
     background: var(--bg0);

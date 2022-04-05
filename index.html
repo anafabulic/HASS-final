@@ -36,6 +36,7 @@
 
     <div class="block gutter">
         <svg id="longest_shortest"></svg>
+        <div class="svg_ls_input" style="text-align:center;"></div>
     </div>
 
     <div class="block gutter">
@@ -77,6 +78,23 @@
 // Define dimensions
 let w = 1000, h = 600, gutter = 20;
 
+// Define helper functions
+
+// 1. Ordinal generator
+let ordinal = (number) => {
+    let ordinalRules = new Intl.PluralRules("en", {
+        type: "ordinal"
+    });
+    let suffixes = {
+        one: "st",
+        two: "nd",
+        few: "rd",
+        other: "th"
+    };
+    let suffix = suffixes[ordinalRules.select(number)];
+    return (number + suffix);
+}
+
 // Define d3 selections
 let svg_ab = d3.select("svg#all_buses")
     .attr("viewBox", `0 0 ${w} ${h}`);
@@ -88,11 +106,16 @@ let svg_rv = d3.select("svg#route_viewer")
     .attr("viewBox", `0 0 ${w} ${h}`);
 
 // Define URIs
-let basemap_uri = "https://raw.githubusercontent.com/anafabulic/HASS-final/main/json/sg_plnarea_simple.geojson";
 let data_uri = "https://raw.githubusercontent.com/anafabulic/HASS-final/main/json/service_summary.json";
+let basemap_uri = "https://raw.githubusercontent.com/anafabulic/HASS-final/main/json/sg_plnarea_simple.geojson";
+let stop_coords_uri = "https://raw.githubusercontent.com/anafabulic/HASS-final/main/json/stop_coords.json";
+let stop_counts_uri = "https://raw.githubusercontent.com/anafabulic/HASS-final/main/json/stop_counts.json";
 
-
-Promise.all([d3.json(data_uri), d3.json(basemap_uri)]).then(data => {
+Promise.all(
+    [   d3.json(data_uri),
+        d3.json(basemap_uri),
+        d3.json(stop_coords_uri),
+        d3.json(stop_counts_uri)   ]).then(data => {
     
     // Define variables/objects; rewind data[0] as basemap
     let routes = data[0];
@@ -108,11 +131,16 @@ Promise.all([d3.json(data_uri), d3.json(basemap_uri)]).then(data => {
         }
     }; 
     basemap.features = basemap_r;
+    let stop_coords = data[2];
+    let stop_counts = data[3];
+    let ranges = {};
 
     console.log(basemap);
     console.log(routes);
+    console.log(stop_coords);
+    console.log(stop_counts);
 
-    // 1. Drawing svg all_buses
+// 1. Drawing svg all_buses
         
     // Define d3 projection
     let projection = d3.geoMercator()
@@ -126,40 +154,266 @@ Promise.all([d3.json(data_uri), d3.json(basemap_uri)]).then(data => {
     let geopath = d3.geoPath().projection(projection);
 
     // Draw map
-
     svg_ab.append("g")
-        .attr("id", "basemap")
+        .attr("class", "basemap")
         .selectAll("path")
         .data(basemap.features)
         .enter()
         .append("path")
         .attr("d", geopath);
     
-    // Construct bus stop array
-    let stops_l = [];
-    let stops_c = {};
-    routes.forEach(function(route) {
-        route.stops.forEach(function(item) {
-            stops_l.push(
-                {
-                    "stop": item.stop,
-                    "latitude": item.latitude,
-                    "longitude": item.longitude,
+    // Build + clean stop data 
+    let stops = [];
+    Object.entries(stop_coords).forEach(function(item) {
+        stops.push(
+            {
+                "stop":      item[0],
+                "latitude":  item[1][0],
+                "longitude": item[1][1],
+                "count":     stop_counts[item[0]]
+            }
+        );
+    });
+    stops.sort((a,b) => {
+        return a.count - b.count;
+    });
+    
+    // Calculate min and max stopcounts
+    ranges.svg_ab = [1e6, 0] // [min, max]
+    stops.forEach(function(item) {
+        if (item.count < ranges.svg_ab[0]) {
+            ranges.svg_ab[0] = item.count;
+        }
+        if (item.count > ranges.svg_ab[1]) {
+            ranges.svg_ab[1] = item.count;
+        }
+    });
+
+    // Construct colorscale, radius scale, etc.
+    let cs_svg_ab = d3.scaleSequential()
+        .domain(ranges.svg_ab)
+        .range([0.95,0]); // not pegging [1,0] because if you're setting size of points/spikes by d.count you want a reasonable nonzero somewhere.
+    // let cs_svg_r = 7.0;
+    // function cs_svg_r_maker(float) {
+    //     return ((1 - cs_svg_ab(float))*cs_svg_r) + 1
+    // };
+
+    // Draw the stops
+    // TODO: slider that filters most-used stops from lesser-used stops?
+    // TODO: or a button that changes the view to hexbin/counts?
+    // see : https://observablehq.com/@mbostock/walmarts-growth 
+    svg_ab.append("g")
+        .selectAll("circle")
+        .data(stops)
+        .join(
+            function(enter) {
+                return enter
+                    .append("circle")
+                    .attr("class", "svg_ab_pts")
+                    .attr("cx", d => projection([d.longitude, d.latitude])[0] )
+                    .attr("cy", d => projection([d.longitude, d.latitude])[1] )
+                    .attr("id", d => d.stop)
+                    .attr("r", "0.01px")
+                    // .attr("r", d => cs_svg_r_maker(d.count).toString() + "px")
+                    // .attr("fill-opacity", d => (1 - cs_svg_ab(d.count)))
+            }
+        )
+        .transition()
+        .duration(1000)
+        .attr("r", "1.8px")
+        .attr("fill-opacity", "0.85")
+        .attr("fill", d => d3.interpolateViridis(cs_svg_ab(d.count)));
+
+// 2. Drawing svg longest_shortest
+
+    // Draw basemap
+    svg_ls.append("g")
+        .attr("class", "basemap")
+        .selectAll("path")
+        .data(basemap.features)
+        .enter()
+        .append("path")
+        .attr("d", geopath);
+    
+    // Input box
+    d3.select("div.svg_ls_input")
+        .append("input")
+        .attr("type", "text")
+        .attr("style", "font-size: 1.2em;font-family: Lato")
+        .attr("size", "10%")
+        .attr("name", "ls_input")
+        .attr("id", "ls_input")
+        .attr("placeholder", "\u2000e.g. 61, 410W");
+
+    // Populate route data .
+    let svg_ls_data = [];
+    routes.forEach(function(item, index) {
+        // Create a geoJSON linestring between consecutive bus stops, then append all linestrings to a single 'links' dataset
+        let stoplist = item.stops; 
+        let links = [];
+        for (var i=0, len=stoplist.length-1; i<len; i++) {
+            links.push({
+                type: "LineString",
+                coordinates: [
+                    [stoplist[i].longitude, stoplist[i].latitude],
+                    [stoplist[i+1].longitude, stoplist[i+1].latitude]        
+                ]
+            });
+        };
+        svg_ls_data.push({
+            route_no: item.route,
+            route: links,
+            length: item.length,
+            max_km: item.max_km,
+            ordinal: index + 1
+        });  
+    });
+    let svg_ls_g = svg_ls.append("g")
+            .attr("id", "svg_ls_routes");
+    
+    // Draw the links
+    // TODO: Reuse same draw function with colorscale in map 1 to plot bus stops on each route w/ frequency
+    function update_ls(data) {
+        data.forEach(function(item) {
+            svg_ls_g.selectAll("path")
+                .data(item.route)
+                .join(
+                    function(enter) {
+                        return enter
+                            .append("path")
+                            .attr("class", "svg_ls_ln")
+                            .attr("stroke-opacity", "0.01");
+                    },
+                    function(update) {
+                        return update
+                            .transition()
+                            .duration(1000)
+                            .attr("stroke-opacity", "0.01");
+                    },
+                    function(exit) {
+                        return exit
+                            .transition()
+                            .duration(1000)
+                            .attr("stroke-opacity", "0.01")
+                            .on("end", function() {
+                                d3.select(this).remove();
+                            });
+                    }
+                )
+                .transition()
+                .duration(1000)
+                .attr("stroke-opacity", "0.35")
+                .attr("d",geopath);
+        });
+    };
+
+    let svg_ls_text = svg_ls.append("g")
+        .attr("id", "svg_ls_txt");
+    
+    function update_ls_text(data) {
+        // Add pointer to label
+        svg_ls_text.selectAll("path")
+            .data(data)
+            .join(
+                function(enter) {
+                    return enter
+                        .append("path")
+                        .attr("class", "svg_ls_ptr");
+                }
+            )
+            .transition()
+            .duration(1000)
+            .attr("d", d => 
+                "M" + projection(d.route[0].coordinates[0])[0] +
+                "," + projection(d.route[0].coordinates[0])[1] +
+                "L" + "730" +
+                "," + "510"
+            );
+        
+        // Hack to 'buffer' the label
+        svg_ls_text.selectAll("rect")
+            .data(data)
+            .join(
+                function(enter) {
+                    return enter
+                        .append("rect")
+                        .attr("x", "700")
+                        .attr("y", "490")
+                        .attr("width", "100px")
+                        .attr("height", "100px")
+                        .attr("fill", "var(--bg0)")
+                        .attr("transform", "translate(-15, -30)");
                 }
             );
-        });
-    });
-    console.log(stops_l);
-    stops_l.forEach(function(item) {
-        l = Object.keys(stops_c)
-        if (!l.includes(item.stop)) {
-            stops_c[item.stop] = 1;
-        } else {
-            stops_c[item.stop] += 1 ;
-        };
-    });
-    console.log(stops_c);
 
+        // Add label
+        let textspace = svg_ls_text.selectAll("text")
+            .data(data)
+            .join(
+                function(enter) {
+                    return enter
+                        .append("text")
+                        .attr("class", data.route_no)
+                        .attr("transform", "translate(700,490)");
+                },
+                function(exit) {
+                    return exit
+                        .on("end", function() {
+                            d3.select(this).remove();
+                        });
+                }
+            );
+        
+        textspace.text(d => "Bus " + d.route_no)
+            .attr("dy","0")
+            .attr("font-size", "1.2em")
+            .transition()
+            .duration(1000)
+            .attr("transform", "translate(700,490)");
+        
+        textspace.append("tspan")
+            .attr("dy", "1.5em")
+            .attr("x", 0)
+            .attr("font-size", "0.6em")
+            .text(d => d.length + " stops");
+
+        textspace.append("tspan")
+            .attr("dy", "1.5em")
+            .attr("x", "0")
+            .attr("font-size", "0.6em")
+            .text(d => d.max_km + " km");
+
+        textspace.append("tspan")
+            .attr("dy", "1.5em")
+            .attr("x", "0")
+            .attr("font-size", "0.6em")
+            .text(d => ordinal(d.ordinal) + "-longest line");
+
+    };
+
+    // Set initial values
+    let initialValue = "51";
+    let filteredArray = svg_ls_data.filter(function(obj) {
+        return obj.route_no === initialValue;
+    });
+    update_ls(filteredArray);
+    update_ls_text(filteredArray);
+
+    // Listen to the input box
+    d3.select("#ls_input").on("change", function(d) {
+        let selectedValue = this.value;
+        let filteredArray = svg_ls_data.filter(function(item) {
+            return item.route_no === selectedValue;
+        });
+        update_ls(filteredArray);
+        update_ls_text(filteredArray);
+    });
+    
+    // The long, straight lines crossing the island are normal. They represent cross-island services with a very large distance between stops.
+
+// 3. Drawing svg route_lengths (bar charts of route lengths)
+
+// 4. Drawing svg route_viewer (live bus locator based on bus stop) (optional)
 
 });
 
