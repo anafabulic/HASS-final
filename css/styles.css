@@ -89,14 +89,13 @@ https://www.lab21.gr/blog/simple-responsive-grid-system-without-using-bootstrap/
 }
 .svg_ls_ln {
     fill: none;
-    stroke-width: 1.8px;
+    stroke-width: 2.5px;
     stroke: orangered;
 }
 .svg_ls_ptr {
     fill: none;
     stroke-width: 0.7px;
     stroke: var(--fg2);
-    stroke-opacity: 0.5px;
 }
 .tooltip {
     position: absolute;

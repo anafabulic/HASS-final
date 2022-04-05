@@ -272,7 +272,7 @@ Promise.all(
             .attr("id", "svg_ls_routes");
     
     // Draw the links
-    // TODO: Reuse same draw function with colorscale in map 1 to plot bus stops on each route w/ frequency
+    // TODO: Time-based update that can be paused and manually-set via textbox
     function update_ls(data) {
         data.forEach(function(item) {
             svg_ls_g.selectAll("path")
@@ -293,7 +293,7 @@ Promise.all(
                     function(exit) {
                         return exit
                             .transition()
-                            .duration(1000)
+                            .duration(750)
                             .attr("stroke-opacity", "0.01")
                             .on("end", function() {
                                 d3.select(this).remove();
@@ -319,8 +319,21 @@ Promise.all(
                     return enter
                         .append("path")
                         .attr("class", "svg_ls_ptr");
+                },
+                function(update) {
+                    return update
+                },
+                function(exit) {
+                    return exit
+                        .transition()
+                        .duration(750)
+                        .attr("stroke-opacity", "0.01")
+                        .on("end", function() {
+                            d3.select(this).remove();
+                        });      
                 }
             )
+            .attr("stroke-opacity", "0.75")
             .transition()
             .duration(1000)
             .attr("d", d => 
@@ -401,12 +414,25 @@ Promise.all(
 
     // Listen to the input box
     d3.select("#ls_input").on("change", function(d) {
+
         let selectedValue = this.value;
         let filteredArray = svg_ls_data.filter(function(item) {
             return item.route_no === selectedValue;
         });
-        update_ls(filteredArray);
+
+        // Hacky update trick: update_ls_text exits nicely on empty array, but update_ls panics if there are no elements in route[].
+        // Hence: do the former, then populate route if filteredArray is empty, then do the latter.
         update_ls_text(filteredArray);
+        if (filteredArray.length == 0) {
+            filteredArray.push({
+                route_no: null,
+                route: [{}],
+                length: null,
+                max_km: null,
+                ordinal: null
+            });
+        };
+        update_ls(filteredArray);
     });
     
     // The long, straight lines crossing the island are normal. They represent cross-island services with a very large distance between stops.
