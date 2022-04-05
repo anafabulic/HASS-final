@@ -192,11 +192,11 @@ Promise.all(
     // Construct colorscale, radius scale, etc.
     let cs_svg_ab = d3.scaleSequential()
         .domain(ranges.svg_ab)
-        .range([0.95,0]); // not pegging [1,0] because if you're setting size of points/spikes by d.count you want a reasonable nonzero somewhere.
-    // let cs_svg_r = 7.0;
-    // function cs_svg_r_maker(float) {
-    //     return ((1 - cs_svg_ab(float))*cs_svg_r) + 1
-    // };
+        .range([0.95,0.05]); // not pegging [1,0] because if you're setting size of points/spikes by d.count you want a reasonable nonzero somewhere.
+    let cs_svg_r = 6.5;
+    function cs_svg_r_maker(float) {
+        return ((1 - cs_svg_ab(float))*cs_svg_r) + 1
+    };
 
     // Draw the stops
     // TODO: slider that filters most-used stops from lesser-used stops?
@@ -214,15 +214,15 @@ Promise.all(
                     .attr("cy", d => projection([d.longitude, d.latitude])[1] )
                     .attr("id", d => d.stop)
                     .attr("r", "0.01px")
-                    // .attr("r", d => cs_svg_r_maker(d.count).toString() + "px")
                     // .attr("fill-opacity", d => (1 - cs_svg_ab(d.count)))
             }
         )
         .transition()
+        .delay(d => (1-cs_svg_ab(d.count))*1300) // fancy fade-in based on d.count
         .duration(1000)
-        .attr("r", "1.8px")
+        .attr("r", d => cs_svg_r_maker(d.count).toString() + "px")
         .attr("fill-opacity", "0.85")
-        .attr("fill", d => d3.interpolateViridis(cs_svg_ab(d.count)));
+        .attr("fill", d => d3.interpolateInferno(cs_svg_ab(d.count)));
 
 // 2. Drawing svg longest_shortest
 
