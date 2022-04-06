@@ -538,7 +538,7 @@ Promise.all(
     d3.select("#ls_input").on("change", function(d) {
         let selectedValue = this.value;
         let filteredArray = svg_ls_data.filter(function(item) {
-            return item.route_no === selectedValue;
+            return item.route_no == selectedValue;
         });
         // Hacky update trick: update_ls_text exits nicely on empty array, but update_ls panics if there are no elements in route[].
         // Hence: do update_ls_text, then populate route if filteredArray is empty, then do update_ls.
