@@ -117,36 +117,6 @@ input[type=text] {
     font-size: 0.8em;
     width: 100%;
 }
-input[type=submit] {
-    background-color: var(--blu_d);
-    color: #fff;
-}
-.autocomplete-items {
-    position: absolute;
-    border: 1px solid var(--bg4);
-    border-bottom: none;
-    border-top: none;
-    z-index: 99;
-    /*position the autocomplete items to be the same width as the container:*/
-    top: 100%;
-    left: 0;
-    right: 0;
-}
-.autocomplete-items div {
-    padding: 10px;
-    cursor: pointer;
-    background-color: #fff;
-    border-bottom: 1px solid var(--bg4);
-}
-.autocomplete-items div:hover {
-    /*when hovering an item:*/
-    background-color: var(--bg2);
-}
-.autocomplete-active {
-    /*when navigating through the items using the arrow keys:*/
-    background-color: var(--bg2) !important;
-    color: #ffffff;
-}
 .svg_ls_ln {
     fill: none;
     stroke-width: 2.5px;
