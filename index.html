@@ -529,7 +529,7 @@ Promise.all(
     // Set initial values
     let initialValue = "51";
     let filteredArray = svg_ls_data.filter(function(obj) {
-        return obj.route_no === initialValue;
+        return obj.route_no == initialValue;
     });
     update_ls(filteredArray);
     update_ls_text(filteredArray);
