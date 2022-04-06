@@ -185,7 +185,7 @@ input[type=submit] {
 }
 .slider {
     -webkit-appearance: none;
-    width: 70%;
+    width: 30%;
     height: 5px;
     border-radius: 5px;  
     background: var(--bg2);
