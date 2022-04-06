@@ -3,7 +3,7 @@
 <head>
 
     <meta charset="UTF-8">
-    <title>Singapore's Longest Bus Routes</title>
+    <title>Singapore's Longest Bus Rides</title>
     <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
     <link rel="stylesheet" href="css/styles.css">
 
@@ -19,13 +19,13 @@
     </div>
 
     <div class="block gutter">
-        <p>
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Sit amet tellus cras adipiscing. Euismod nisi porta lorem mollis aliquam. Nisl rhoncus mattis rhoncus urna neque. Dictumst quisque sagittis purus sit amet. Commodo quis imperdiet massa tincidunt nunc pulvinar sapien et. Ac turpis egestas integer eget aliquet nibh. Feugiat sed lectus vestibulum mattis. Elementum integer enim neque volutpat. Ipsum dolor sit amet consectetur adipiscing elit. Quisque sagittis purus sit amet. Id diam vel quam elementum pulvinar etiam. Non sodales neque sodales ut etiam sit. Pharetra vel turpis nunc eget.
-        </p>
+        <svg id="all_buses"></svg>
     </div>
 
     <div class="block gutter">
-        <svg id="all_buses"></svg>
+        <p>
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Sit amet tellus cras adipiscing. Euismod nisi porta lorem mollis aliquam. Nisl rhoncus mattis rhoncus urna neque. Dictumst quisque sagittis purus sit amet. Commodo quis imperdiet massa tincidunt nunc pulvinar sapien et. Ac turpis egestas integer eget aliquet nibh. Feugiat sed lectus vestibulum mattis. Elementum integer enim neque volutpat. Ipsum dolor sit amet consectetur adipiscing elit. Quisque sagittis purus sit amet. Id diam vel quam elementum pulvinar etiam. Non sodales neque sodales ut etiam sit. Pharetra vel turpis nunc eget.
+        </p>
     </div>
 
     <div class="block gutter">
@@ -35,8 +35,10 @@
     </div>
 
     <div class="block gutter">
-        <svg id="longest_shortest"></svg>
-        <div class="svg_ls_input" style="text-align:center;"></div>
+        <div class="svg_rl_dropdown"></div>
+        </br>
+        <svg id="route_lengths"></svg>
+        <div class="svg_rl_slider"></div>
     </div>
 
     <div class="block gutter">
@@ -46,7 +48,8 @@
     </div>
 
     <div class="block gutter">
-        <svg id="route_lengths"></svg>
+        <div><form class="svg_ls_input" action="#"></form></div>
+        <svg id="longest_shortest"></svg>
     </div>
 
     <div class="block gutter">
@@ -72,7 +75,8 @@
 
 </div>
 
-<script src="https://d3js.org/d3.v7.min.js"></script>
+<!-- d3 version 7.4.2 -->
+<script src="scripts/d3.min.js"></script>
 <script>
 
 // Define dimensions
@@ -93,6 +97,16 @@ let ordinal = (number) => {
     };
     let suffix = suffixes[ordinalRules.select(number)];
     return (number + suffix);
+}
+// 2. Mean calculator
+let mean = (array) => {
+    let total = 0;
+    let count = 0;
+    array.forEach(function(item) {
+        total += item;
+        count++;
+    });
+    return total / count;
 }
 
 // Define d3 selections
@@ -192,10 +206,10 @@ Promise.all(
     // Construct colorscale, radius scale, etc.
     let cs_svg_ab = d3.scaleSequential()
         .domain(ranges.svg_ab)
-        .range([0.95,0.05]); // not pegging [1,0] because if you're setting size of points/spikes by d.count you want a reasonable nonzero somewhere.
-    let cs_svg_r = 6.5;
+        .range([0.95,0.05]); // not pegging [1,0] because if you're setting other attributes by d.count you want a reasonable nonzero somewhere.
     function cs_svg_r_maker(float) {
-        return ((1 - cs_svg_ab(float))*cs_svg_r) + 1
+        let r = 6.5;
+        return ((1 - cs_svg_ab(float))*r) + 1
     };
 
     // Draw the stops
@@ -218,8 +232,8 @@ Promise.all(
             }
         )
         .transition()
-        .delay(d => (1-cs_svg_ab(d.count))*1300) // fancy fade-in based on d.count
-        .duration(1000)
+        .delay(d => (1 - cs_svg_ab(d.count))*1250) // fancy fade-in based on d.count
+        .duration(750)
         .attr("r", d => cs_svg_r_maker(d.count).toString() + "px")
         .attr("fill-opacity", "0.85")
         .attr("fill", d => d3.interpolateInferno(cs_svg_ab(d.count)));
@@ -236,17 +250,126 @@ Promise.all(
         .attr("d", geopath);
     
     // Input box
-    d3.select("div.svg_ls_input")
+    // TODO: https://www.w3schools.com/howto/howto_js_autocomplete.asp
+    d3.select("form.svg_ls_input")
         .append("input")
         .attr("type", "text")
-        .attr("style", "font-size: 1.2em;font-family: Lato")
-        .attr("size", "10%")
+        .attr("size", "15px")
         .attr("name", "ls_input")
         .attr("id", "ls_input")
-        .attr("placeholder", "\u2000e.g. 61, 410W");
+        .attr("placeholder", "Enter bus route...\u2000");
+    let route_list = routes.map(({route}) => {return route});
+    function autocomplete(inp, arr) {
+        /*the autocomplete function takes two arguments,
+        the text field element and an array of possible autocompleted values:*/
+        var currentFocus;
+        /*execute a function when someone writes in the text field:*/
+        inp.addEventListener("input", function(e) {
+            var a, b, i, val = this.value;
+            /*close any already open lists of autocompleted values*/
+            closeAllLists();
+            if (!val) { return false;}
+            currentFocus = -1;
+            /*create a DIV element that will contain the items (values):*/
+            a = document.createElement("DIV");
+            a.setAttribute("id", this.id + "autocomplete-list");
+            a.setAttribute("class", "autocomplete-items");
+            /*append the DIV element as a child of the autocomplete container:*/
+            this.parentNode.appendChild(a);
+            /*for each item in the array...*/
+            for (i = 0; i < arr.length; i++) {
+                /*check if the item starts with the same letters as the text field value:*/
+                if (arr[i].substr(0, val.length).toUpperCase() == val.toUpperCase()) {
+                /*create a DIV element for each matching element:*/
+                b = document.createElement("DIV");
+                /*make the matching letters bold:*/
+                b.innerHTML = "<strong>" + arr[i].substr(0, val.length) + "</strong>";
+                b.innerHTML += arr[i].substr(val.length);
+                /*insert a input field that will hold the current array item's value:*/
+                b.innerHTML += "<input type='hidden' value='" + arr[i] + "'>";
+                /*execute a function when someone clicks on the item value (DIV element):*/
+                    b.addEventListener("click", function(e) {
+                    /*insert the value for the autocomplete text field:*/
+                    inp.value = this.getElementsByTagName("input")[0].value;
+                    /*close the list of autocompleted values,
+                    (or any other open lists of autocompleted values:*/
+                    closeAllLists();
+                });
+                a.appendChild(b);
+                }
+            }
+        });
+        /*execute a function presses a key on the keyboard:*/
+        inp.addEventListener("keydown", function(e) {
+            var x = document.getElementById(this.id + "autocomplete-list");
+            if (x) x = x.getElementsByTagName("div");
+            if (e.keyCode == 40) {
+                /*If the arrow DOWN key is pressed,
+                increase the currentFocus variable:*/
+                currentFocus++;
+                /*and and make the current item more visible:*/
+                addActive(x);
+            } else if (e.keyCode == 38) { //up
+                /*If the arrow UP key is pressed,
+                decrease the currentFocus variable:*/
+                currentFocus--;
+                /*and and make the current item more visible:*/
+                addActive(x);
+            } else if (e.keyCode == 13) {
+                /*If the ENTER key is pressed, prevent the form from being submitted,*/
+                e.preventDefault();
+                if (currentFocus > -1) {
+                /*and simulate a click on the "active" item:*/
+                if (x) x[currentFocus].click();
+                }
+            }
+        });
+        function addActive(x) {
+            /*a function to classify an item as "active":*/
+            if (!x) return false;
+            /*start by removing the "active" class on all items:*/
+            removeActive(x);
+            if (currentFocus >= x.length) currentFocus = 0;
+            if (currentFocus < 0) currentFocus = (x.length - 1);
+            /*add class "autocomplete-active":*/
+            x[currentFocus].classList.add("autocomplete-active");
+        }
+        function removeActive(x) {
+            /*a function to remove the "active" class from all autocomplete items:*/
+            for (var i = 0; i < x.length; i++) {
+            x[i].classList.remove("autocomplete-active");
+            }
+        }
+        function closeAllLists(elmnt) {
+            /*close all autocomplete lists in the document,
+            except the one passed as an argument:*/
+            var x = document.getElementsByClassName("autocomplete-items");
+            for (var i = 0; i < x.length; i++) {
+            if (elmnt != x[i] && elmnt != inp) {
+            x[i].parentNode.removeChild(x[i]);
+            }
+        }
+        }
+        /*execute a function when someone clicks in the document:*/
+        document.addEventListener("click", function (e) {
+            closeAllLists(e.target);
+        });
+    } 
+    autocomplete(document.getElementById("ls_input"), route_list);
 
     // Populate route data .
     let svg_ls_data = [];
+    // Very hacky interlude
+    routes.sort((a,b) => {
+        return b["max_km"] - a["max_km"];
+    });
+    routes.forEach(function(item, index) {
+        item.max_km_ordinal = index + 1;
+    });
+    routes.sort((a,b) => {
+        return b["length"] - a["length"];
+    });
+    // End of interlude
     routes.forEach(function(item, index) {
         // Create a geoJSON linestring between consecutive bus stops, then append all linestrings to a single 'links' dataset
         let stoplist = item.stops; 
@@ -265,6 +388,7 @@ Promise.all(
             route: links,
             length: item.length,
             max_km: item.max_km,
+            max_km_ordinal: item.max_km_ordinal,
             ordinal: index + 1
         });  
     });
@@ -287,7 +411,7 @@ Promise.all(
                     function(update) {
                         return update
                             .transition()
-                            .duration(1000)
+                            .duration(750)
                             .attr("stroke-opacity", "0.01");
                     },
                     function(exit) {
@@ -302,7 +426,7 @@ Promise.all(
                 )
                 .transition()
                 .duration(1000)
-                .attr("stroke-opacity", "0.35")
+                .attr("stroke-opacity", "0.30")
                 .attr("d",geopath);
         });
     };
@@ -387,20 +511,14 @@ Promise.all(
         textspace.append("tspan")
             .attr("dy", "1.5em")
             .attr("x", 0)
-            .attr("font-size", "0.6em")
-            .text(d => d.length + " stops");
+            .attr("font-size", "0.8em")
+            .text(d => d.length + " stops (" + ordinal(d.ordinal) + "-longest)");
 
         textspace.append("tspan")
             .attr("dy", "1.5em")
             .attr("x", "0")
-            .attr("font-size", "0.6em")
-            .text(d => d.max_km + " km");
-
-        textspace.append("tspan")
-            .attr("dy", "1.5em")
-            .attr("x", "0")
-            .attr("font-size", "0.6em")
-            .text(d => ordinal(d.ordinal) + "-longest line");
+            .attr("font-size", "0.8em")
+            .text(d => d.max_km + " km (" + ordinal(d.max_km_ordinal) + "-longest)");
 
     };
 
@@ -414,14 +532,12 @@ Promise.all(
 
     // Listen to the input box
     d3.select("#ls_input").on("change", function(d) {
-
         let selectedValue = this.value;
         let filteredArray = svg_ls_data.filter(function(item) {
             return item.route_no === selectedValue;
         });
-
         // Hacky update trick: update_ls_text exits nicely on empty array, but update_ls panics if there are no elements in route[].
-        // Hence: do the former, then populate route if filteredArray is empty, then do the latter.
+        // Hence: do update_ls_text, then populate route if filteredArray is empty, then do update_ls.
         update_ls_text(filteredArray);
         if (filteredArray.length == 0) {
             filteredArray.push({
@@ -429,17 +545,236 @@ Promise.all(
                 route: [{}],
                 length: null,
                 max_km: null,
+                max_km_ordinal: null,
                 ordinal: null
             });
         };
         update_ls(filteredArray);
     });
     
-    // The long, straight lines crossing the island are normal. They represent cross-island services with a very large distance between stops.
+    // The long, straight lines crossing the island are normal. They represent cross-island services with very large distances between stops.
 
 // 3. Drawing svg route_lengths (bar charts of route lengths)
 
+    // Define min/max      
+    ranges.svg_rl = {}  
+    ranges.svg_rl.length = [1e6, 0]; // min, max
+    routes.forEach(function(item) {
+        if (item.length < ranges.svg_rl.length[0]) {
+            ranges.svg_rl.length[0] = item.length;
+        };
+        if (item.length > ranges.svg_rl.length[1]) {
+            ranges.svg_rl.length[1] = item.length;
+        };
+    });
+    ranges.svg_rl.max_km = [1e6, 0]; // min, max
+    routes.forEach(function(item) {
+        if (item.max_km < ranges.svg_rl.max_km[0]) {
+            ranges.svg_rl.max_km[0] = item.max_km;
+        };
+        if (item.max_km > ranges.svg_rl.max_km[1]) {
+            ranges.svg_rl.max_km[1] = item.max_km;
+        };
+    });
+    
+    // Initialise some important cosmetic variables
+    let svg_rl_viewlimit = 50; // Limit at which y-axis text stops being visible
+    let svg_rl_viewlimit2 = 100; // Limit at which lollipops become bars
+    let svg_rl_init = 25; // Initialise zoom level at this value
+
+    // Attach inputs
+    d3.select("div.svg_rl_slider")
+        .append("input")
+        .attr("type", "range")
+        .attr("min", "0")
+        .attr("max", "100")
+        .attr("value", svg_rl_init)
+        .attr("name", "rl_slider")
+        .attr("id", "rl_slider")
+        .attr("class", "slider");
+    let svg_rl_dropdown_form = d3.select("div.svg_rl_dropdown")
+        .append("form");
+    svg_rl_dropdown_form.append("label")
+            .attr("for", "rl_dropdown")
+            .text("Sort route by: ")
+    let svg_rl_dropdown_form_select = svg_rl_dropdown_form.append("select")
+        .attr("name", "rl_dropdown")
+        .attr("id", "rl_dropdown");
+    svg_rl_dropdown_form_select.append("option")
+        .attr("value", "max_km")
+        .text("length (km)");
+    svg_rl_dropdown_form_select.append("option")
+        .attr("value", "length")
+        .text("number of stops");
+    
+    // Define selection to render on
+    let svg_rl_bc = svg_rl.append("g")
+        .attr("id", "svg_rl_chart")
+        .attr("transform", "translate(100,40)");
+    let svg_rl_bars = svg_rl_bc.append("g")
+        .attr("class", "svg_rl_bars");
+    let svg_rl_x = svg_rl_bc.append("g")
+        .attr("class", "x_axis");
+    let svg_rl_x2 = svg_rl_bc.append("g")
+        .attr("class", "x_axis2")
+    let svg_rl_y = svg_rl_bc.append("g")
+        .attr("class", "y_axis");
+
+    function update_rl(data, slice, factor) {
+        // Sort and slice
+        data.sort((a,b) => {
+            return b[factor] - a[factor];
+        });
+        let working_data = data.slice(0,slice);
+
+        // Define scales and axes
+        let x_scale = d3.scaleLinear()
+            .domain([0, ranges.svg_rl[factor][1]*1.05])
+            .range([0, w * 0.80])
+            .nice();
+        let y_scale = d3.scaleBand()
+            .domain(working_data.map(({route}) => {return route}))
+            .range([0, h * 0.85])
+            .paddingInner(0.05);
+        svg_rl_bars.attr("transform", "translate(0," + y_scale.bandwidth()/2 + ")");
+        let x_axis = d3.axisTop(x_scale);
+        let x_axis2 = d3.axisBottom(x_scale);
+        let y_axis = d3.axisLeft(y_scale)
+            .tickSizeInner(0);
+
+
+        // Setup axes
+        svg_rl_x.call(x_axis)
+            .attr("class", "svg_rl_x")
+            .attr("transform", "translate(0,-20)");
+        svg_rl_x2.call(x_axis2)
+            .attr("class", "svg_rl_x2")
+            .attr("transform", "translate(0," + (h * 0.90).toString() + ")");
+        svg_rl_y.call(y_axis)
+            .attr("class", "svg_rl_y");
+        
+        // Remove y-axis labels if too crowded
+        // Also hacked together a 'zoom-out' resize rule
+        if (slice <= svg_rl_viewlimit) {
+            d3.select(".svg_rl_y").attr("style", "font-size:" + (1-(slice/svg_rl_viewlimit)).toString() + "em;stroke-width:0px;font:'Lato',sans-serif;");
+        } else {
+            d3.select(".svg_rl_y").attr("style", "font-size:0.0em;stroke-width:1px;font:'Lato',sans-serif;");
+        }
+
+        // represent with rect so can 'morph' into a density chart seamlessly with rect-height
+        svg_rl_bars.selectAll("rect")
+            .data(working_data)
+            .join(
+                function(enter) {
+                    return enter
+                        .append("rect")
+                        .attr("x", x_scale(0))
+                        .attr("y", d => y_scale(d.route))
+                        .attr("width", "0px")
+                        .attr("stroke-width", "0px")
+                        .attr("fill", "var(--org)");
+                },
+                function(update) {
+                    return update
+                        .attr("y", d => y_scale(d.route));
+                },
+                function(exit) {
+                    return exit
+                        .remove();
+                }
+            )
+            .transition()
+            .duration(1000)
+            .attr("width", d => `${x_scale(d[factor])}px`)
+            .attr("height", d => {
+                if (
+                    slice > svg_rl_viewlimit2 &&
+                    working_data.includes(d, Math.floor(985/1000*working_data.length))
+                    // Shave off last 1.5% of values when zoomed out
+                ) {
+                    return "0px";   
+                } else if (slice <= svg_rl_viewlimit2) {
+                    return "1px";
+                    // then turn area chart into lollipops when zoomed in
+                } else {
+                    return "8px";
+                // then turn lollipops into area chart when zoomed out and not in last 1.5% 
+                }
+            });
+
+        svg_rl_bars.selectAll("circle")
+            .data(working_data)
+            .join(
+                function(enter) {
+                    return enter
+                        .append("circle")
+                        .attr("cx", x_scale(0))
+                        .attr("cy", d => y_scale(d.route))
+                        .attr("r", "0px");
+                },
+                function(update) {
+                    return update
+                        .attr("cy", d => y_scale(d.route));
+                },
+                function(exit) {
+                    return exit
+                        .remove();
+                }
+            )
+            .transition()
+            .duration(1000)
+            .attr("r", d => {
+                if (slice <= svg_rl_viewlimit) {
+                    return "4px";
+                } else if (slice <= svg_rl_viewlimit2) {
+                    return "2px";
+                } else {
+                    return "0px";
+                };
+            })
+            .attr("cx", d => x_scale(d[factor]));
+        
+    };
+
+
+    // Some kind of benchmark to visualise how many bus routes are 'too long' according to maybe some LTA metric...
+    // let mean_route_length = mean(routes.map(({length}) => {return length}));
+    // svg_rl_bars.append("line")
+    //     .attr("id", "svg_rl_mean")
+    //     .attr("x1", x_scale(mean_route_length))
+    //     .attr("y1", (h * 0.15).toString())
+    //     .attr("x2", x_scale(mean_route_length))
+    //     .attr("y2", (h * 0.85).toString())
+    //     .attr("style", "stroke:black;stroke-width:1px;");
+    
+    // very magic function (DO NOT TOUCH)
+    function svg_rl_smooth(x) {
+        if (x <= 50) {
+            return (8 + (42/33*(x-0)) )
+        } else if (x <= 66) {
+            return (50 + (50/33*(x-33)) )
+        } else {
+            return (100 + ((routes.length-100)/34*(x-66)) )
+        }
+    };
+    let svg_rl_facet = "max_km"; // length or max_km
+    let svg_rl_slice = svg_rl_init;
+    update_rl(routes, svg_rl_init, svg_rl_facet); // initialise
+
+    d3.select("#rl_slider").on("input", function(d) {
+        let raw_value = this.value;
+        svg_rl_slice = svg_rl_smooth(raw_value);
+        update_rl(routes, svg_rl_slice, svg_rl_facet); // data, slice, factor
+    });
+
+    d3.select("#rl_dropdown").on("input", function(d) {
+        svg_rl_facet = this.value;
+        update_rl(routes, svg_rl_slice, svg_rl_facet); // data, slice, factor
+    });
+
+
 // 4. Drawing svg route_viewer (live bus locator based on bus stop) (optional)
+// ?. Hexbin of bus service density (number of lines * number of stops) (basically a raw count of all lines' stops within a hex) (can divide by number of stops to figure out number of lines passing through a hex)
 
 });
 
