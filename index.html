@@ -84,7 +84,7 @@
     </div>
 
     <div class="block gutter">
-        <div><form class="svg_ls_input" autocomplete="off" action=""></form></div>
+        <div style="text-align:right;margin-bottom:20px;margin-right:11%;"><form class="svg_ls_input" autocomplete="off" onsubmit="return false"></form></div>
         <svg id="longest_shortest"></svg>
     </div>
 
@@ -301,7 +301,7 @@ Promise.all(
     d3.select("form.svg_ls_input")
         .append("input")
         .attr("type", "text")
-        .attr("size", "15px")
+        .attr("size", "30px")
         .attr("list", "stops")
         .attr("name", "ls_input")
         .attr("id", "ls_input")
