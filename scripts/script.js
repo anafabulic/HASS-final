@@ -524,14 +524,10 @@ Promise.all(
         svg_rl_bars.attr("transform", "translate(0," + y_scale.bandwidth()/2 + ")");
 
         // Setup axes
-        svg_rl_x.transition()
-            .duration(1000)
-            .call(d3.axisTop(x_scale))
+        svg_rl_x.call(d3.axisTop(x_scale))
             .attr("class", "axis_text svg_rl_x")
             .attr("transform", "translate(0,-20)");
-        svg_rl_x2.transition()
-            .duration(1000)
-            .call(d3.axisBottom(x_scale))
+        svg_rl_x2.call(d3.axisBottom(x_scale))
             .attr("class", "axis_text svg_rl_x2")
             .attr("transform", "translate(0," + (h * 0.90).toString() + ")");
         svg_rl_y.call(d3.axisLeft(y_scale).tickSizeInner(0))
@@ -616,12 +612,13 @@ Promise.all(
             })
             .attr("cx", d => x_scale(d[factor]));
         
+        // calculate mean
         let factorchooser = (data, factor) => {
             return data.map((item) => {return item[factor]});
         }
         let data_mean = [d3.mean(factorchooser(data, factor))];
-        console.log(data_mean);
-
+        
+        // add mean line
         svg_rl_bars.selectAll("line").remove();
         svg_rl_bars.append("g")
             .attr("class", "svg_rl_meandian")
@@ -646,8 +643,9 @@ Promise.all(
                 }
             )
             .attr("stroke", "var(--blu)")
-            .attr("stroke-width", "2px");
-        
+            .attr("stroke-width", "1.75px");
+
+        // add caption for mean line
         svg_rl_bars.selectAll("text").remove();
         svg_rl_bars.append("g")
             .attr("class", "svg_rl_meandian_text")
@@ -665,20 +663,10 @@ Promise.all(
                     return exit.remove();
                 }
             )
-            .attr("transform", d => "translate(" + (x_scale(d)+w*0.01).toString() + "," + (y_scale(y_scale_list[Math.floor(y_scale_list.length/2)])-h*0.01).toString() + ")")
+            .attr("transform", d => "translate(" + (x_scale(d)+w*0.015).toString() + "," + (y_scale(y_scale_list[Math.floor(y_scale_list.length/2)])-h*0.01).toString() + ")")
             .attr("class", "axis_text")
             .text(d => "mean \u2248 " + Math.round(d));
     };
-
-    // Some kind of benchmark to visualise how many bus routes are 'too long' according to maybe some LTA metric...
-    // let mean_route_length = mean(routes.map(({length}) => {return length}));
-    // svg_rl_bars.append("line")
-    //     .attr("id", "svg_rl_mean")
-    //     .attr("x1", x_scale(mean_route_length))
-    //     .attr("y1", (h * 0.15).toString())
-    //     .attr("x2", x_scale(mean_route_length))
-    //     .attr("y2", (h * 0.85).toString())
-    //     .attr("style", "stroke:black;stroke-width:1px;");
 
     // very magic function (DO NOT TOUCH)
     function svg_rl_smooth(x) {
