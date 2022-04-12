@@ -97,6 +97,10 @@ a:hover   {color: var(--org); }
 .svg_ab_pts {
     fill-opacity: 0.8;
 }
+.svg_ab_lgd_txt {
+    font-size: 1.1em;
+    font-family: 'Inconsolata', sans-serif;
+}
 .svg_ls_input {
     position: relative;
     display: inline-block;
@@ -137,15 +141,15 @@ input[type=text] {
 .svg_rl_dropdown {
     text-align: center;
 }
-.svg_rl_y {
-    font-size: 1.1em;
-    font-family: 'Inconsolata', sans-serif;
+.svg_hs_dropdown {
+    text-align: center;
 }
-.svg_rl_x {
-    font-size: 1.1em;
-    font-family: 'Inconsolata', sans-serif;
+.svg_hs_bars {
+    fill: var(--fg3);
+    stroke-width: 1px;
+    stroke: transparent;
 }
-.svg_rl_x2 {
+.axis_text {
     font-size: 1.1em;
     font-family: 'Inconsolata', sans-serif;
 }
