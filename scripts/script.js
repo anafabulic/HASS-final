@@ -360,22 +360,16 @@ Promise.all(
                 function(enter) {
                     return enter
                         .append("path")
-                        .attr("class", "svg_ls_ptr");
+                        .attr("class", "svg_ls_ptr")
+                        .attr("stroke-opacity", "0.75");
                 },
                 function(update) {
-                    return update
+                    return update;
                 },
                 function(exit) {
-                    return exit
-                        .transition()
-                        .duration(750)
-                        .attr("stroke-opacity", "0.01")
-                        .on("end", function() {
-                            d3.select(this).remove();
-                        });      
+                    return exit.remove();
                 }
             )
-            .attr("stroke-opacity", "0.75")
             .transition()
             .duration(1000)
             .attr("d", d => 
@@ -402,6 +396,7 @@ Promise.all(
             );
 
         // Add label
+        svg_ls_text.selectAll("text").remove();
         let textspace = svg_ls_text.selectAll("text")
             .data(data)
             .join(
@@ -433,7 +428,7 @@ Promise.all(
             .attr("x", "0")
             .attr("font-size", "0.6em")
             .text(d => d.max_km + " km (" + ordinal(d.max_km_ordinal) + "-longest)");
-
+        
     };
 
     // Set initial values
