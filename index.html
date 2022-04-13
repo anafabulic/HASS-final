@@ -16,22 +16,22 @@
     <div class="block gutter">
         <h1 style="text-align:center;">In Defense of the Long Bus Ride</h1>
         <p style="text-align:center;margin:0 0 20px;">
-            <small>A data story for <a href="" target="_blank">HASS02.546: Interactive Data Visualisation</a></small>
+            <small>A data story for <a href="https://chi-loong.github.io/HASS02.526/" target="_blank">HASS02.546: Interactive Data Visualisation</a></small>
         </p>
     </div>
 
-    <div class="block gutter" style="margin:0 5% 100px;">
+    <div class="block gutter" style="margin:0 5% 10%;">
         <div class="col-50">
-            <div class="block gutter">
-            <p style="text-align:left;font-style:italic;">
-                <small>created by <a href="https://github.com/anafabulic/" target="_blank">Sean Chua</a></small>
+            <div class="block gutter leftcol">
+            <p>
+                <small>Author: <a href="https://github.com/anafabulic/" target="_blank">Sean Chua</a></small>
             </p>
             </div>
         </div>
         <div class="col-50">
-            <div class="block gutter">
-            <p style="text-align:right;font-style:italic;">
-                <small>24 April 2022</a></small>
+            <div class="block gutter rightcol">
+            <p>
+                <small>Date: 24/04/2022</a></small>
             </p>
             </div>
         </div>
@@ -46,7 +46,7 @@
     <div class="block gutter">
         <svg id="all_buses"></svg>
         <div>
-            <p style="font-style:italic;text-align:center;">
+            <p style="text-align:center;">
                 <small>All bus stops in Singapore, shaded by number of routes they serve.</small>
             </p>
         </div>
@@ -57,7 +57,7 @@
             On a map of all bus stops, these trunk services are visible as faint orange stripes leading to the dark brown hub of the central business district. The persistence of such routes runs contrary to the Land Transport Authority&rsquo;s planning doctrine, where the <a href="https://www.researchgate.net/publication/312813677_Engineering_Singapore's_Land_Transport_System" target="_blank">hub-and-spoke</a> model of transport planning dominates the integration of newer, shorter feeder services with the rail network. When mapped out like this, Singapore&rsquo;s trunk routes appear a faint anachronism of an older, bus-dominated public transport landscape atop the backbones of colonial-era roads. 
         </p>
         <p>
-            There is, however, little-to-no documentation on what constitutes a &lsquo;long&rsquo; bus ride. Then-Second Minister for Transport Lim Hwee Hua explained in <a href="https://sprs.parl.gov.sg/search/topic?reportid=008_20100816_S0006_T0004" target="_blank">a 2010 Parliament session</a> that a route length of 20-37 km could be viewed as excessive by some. She also mentioned that the LTA does phase out trunk routes when it&rsquo;s clear that most of its users don&rsquo;t travel on it for the full length. It can, and it has: during <a href="https://www.straitstimes.com/singapore/politics/budget-debate-95-million-saved-yearly-by-shortening-3-bus-routes-says-chee-hong-tat-to-gerald-giam" target="_blank">this March&rsquo;s budget debate</a>, Aljunied MP Gerald Giam raised the issue of the shortening of long bus routes from his constituency to the CBD, which inconvenienced a bunch of older residents. And just two years earlier, Bukit Panjang MP Liang Eng Hwa also expressed <a href="https://www.channelnewsasia.com/singapore/bukit-panjang-bus-services-700-171-change-lta-public-funds-608936" target="_blank">some pretty strong disappointment</a> at the withdrawal of long bus services in his constituency following the opening of the Downtown Line. Is this the beginning of the end for trunk routes?
+            There is, however, little-to-no documentation on what constitutes a &lsquo;long&rsquo; bus ride. Then-Second Minister for Transport Lim Hwee Hua explained in <a href="https://sprs.parl.gov.sg/search/topic?reportid=008_20100816_S0006_T0004" target="_blank">a 2010 Parliament session</a> that a route length of 20&ndash;37 km could be viewed as excessive by some. She also mentioned that the LTA does phase out trunk routes when it&rsquo;s clear that most of its users don&rsquo;t travel on it for the full length. It can, and it has: during <a href="https://www.straitstimes.com/singapore/politics/budget-debate-95-million-saved-yearly-by-shortening-3-bus-routes-says-chee-hong-tat-to-gerald-giam" target="_blank">this March&rsquo;s budget debate</a>, Aljunied MP Gerald Giam raised the issue of the shortening of long bus routes from his constituency to the CBD, which inconvenienced a bunch of older residents. And just two years earlier, Bukit Panjang MP Liang Eng Hwa also expressed <a href="https://www.channelnewsasia.com/singapore/bukit-panjang-bus-services-700-171-change-lta-public-funds-608936" target="_blank">some pretty strong disappointment</a> at the withdrawal of long bus services in his constituency following the opening of the Downtown Line. Is this the beginning of the end for trunk routes?
         </p>
         <p>
             According to the data, probably not.
@@ -70,7 +70,7 @@
         <svg id="route_lengths"></svg>
         <div class="svg_rl_slider"></div>
         <div>
-            <p style="font-style:italic;text-align:center;">
+            <p style="text-align:center;">
                 <small>(slide to zoom)</small>
             </p>
         </div>
@@ -78,10 +78,13 @@
 
     <div class="block gutter">
         <p>
-            Looking at the 554 bus routes provided by the LTA DataMall API, it&rsquo;s surprising just how many of them fit&mdash;or even exceed&mdash;that benchmark of 20-37 km. The longest service by distance between first and last stops is <a href="https://www.transitlink.com.sg/eservice/eguide/service_route.php?service=858" target="_blank">Tower Transit&rsquo;s 858 service</a>, covering a staggering total of 73.4 km over 75 stops. Many of these longest routes are also old ones, if the prevalence of two-digit numbers among the top 20 is anything to go by. Several, interestingly, are special services: route numbers in the 500s or containing an &lsquo;N&rsquo; are specific long-distance routes operated by private companies for the former or past midnight for the latter. A lot of these routes go by highways, which results in our map not showing their full extent (the DataMall API only allows querying for specific stops, not route).
+            Looking at the 554 bus routes provided by <a href="https://DataMall.lta.gov.sg/content/DataMall/en.html" target="_blank">LTA&rsquo;s DataMall</a>, it&rsquo;s surprising just how many of them fit&mdash;or even exceed&mdash;Lim Hwee Hwa&rsquo;s benchmark of 20&ndash;37 km. The longest service by distance between first and last stops is <a href="https://www.transitlink.com.sg/eservice/eguide/service_route.php?service=858" target="_blank">Tower Transit&rsquo;s 858 service</a>, covering a staggering total of 73.4 km over 75 stops. Many of these longest routes are also old ones, if the prevalence of two-digit numbers among the top 20 is anything to go by. Several, interestingly, are special services: route numbers in the 500s or containing an &lsquo;N&rsquo; are specific long-distance routes operated by private companies for the former or past midnight for the latter.
+        </p>
+        <p style="font-style:italic;">
+            Note: A lot of these routes go by highways, which results in weird jagged lines when rendered in this map. The DataMall API only allows us to query bus routes by their individual stops, not the path they take.
         </p>
         <p>
-            Going by number of stops, we see more routes in the top 20 numbered in the 0-99 range as well as the 100-199 range. This somewhat fits the pattern of path dependency observed in older legacy routes, winding through many neighbourhoods and usually passing through the city centre. The shape of these routes can be more clearly seen in our map.
+            What about by number of stops? From the overlay, we find that most of these longest routes pass through the CBD. This fits the pattern of Singapore&rsquo;s longest bus routes being older routes designed around the city centre, producing the darker orange bands of frequently-trafficked bus stops that we saw in the first map. It&rsquo;s important to note that the number of stops shown here might be misleading&mdash;bus number 51, for instance, is actually a loop service with around 90 stops between each terminal. According to <a href="https://www.transitlink.com.sg/eservice/eguide/service_route.php?service=51" target="_blank">TransitLink's website</a>, this journey can take you as little as 2-and-a-half hours&mdash;just enough time to finish watching <a href="https://www.imdb.com/list/ls059008122/" target="_blank">Avengers: Endgame</a> from beginning to end.
         </p>
         <p>
             Here&rsquo;s an interactive version of the inset map so you can see where your favourite routes are:
@@ -95,7 +98,7 @@
 
     <div class="block gutter">
         <p>
-            How many of these routes are &lsquo;too long&rsquo;? It&rsquo;s hard to say given the lack of live ridership data and the general clunkiness of querying bus frequency from the LTA DataMall. From the histogram below, we can find the mean and median route length by distance travelled and number of stops, but it can&rsquo;t tell us much about whether they&rsquo;re underused or not. What they can tell us is that [TODO...].
+            How many of these routes are &lsquo;too long&rsquo;? A histogram can help us see the distribution of route lengths more clearly. 
         </p>
     </div>
 
@@ -103,26 +106,45 @@
         <div class="svg_hs_dropdown"></div>
         </br>
         <svg id="histogram"></svg>
+        <p style="text-align:center;"><small>Histogram of route lengths</small></p>
     </div>
 
     <div class="block gutter">
         <p>
+            Both distributions of route lengths are pretty positively-skewed. Interestingly, both distributions are somewhat bimodal&mdash;numerically distinguishing between trunk routes and feeder routes! From this, we might estimate that trunk routes are not exactly being outnumbered by newfangled feeders; on the contrary, they&rsquo;re more or less equal. At time of writing, we may conclude that the long bus ride isn&rsquo;t in danger of disappearing.
+        </p>
+        <p>
+            Another interesting feature is the spike in number of services around the mean route distance of 17 kilometres. Is this evidence of deliberate design&mdash;the LTA keeping the distance travelled on new bus routes at an optimal level? 
+        </p>
+        <p>
             It&rsquo;s also clear that long bus routes provide excellent redundancy to Singapore&rsquo;s transport system&mdash;always a good thing, if the engineering podcast I listen to is anything to go by. Then-Minister for Transport Ong Ye Kung has <a href="(https://sprs.parl.gov.sg/search/sprs3topic?reportid=budget-1629)" target="_blank">admitted as much in Parliament</a> when he said that long routes remain a solid backbone to our transport network, even when most of them run at a loss. Most of our routes, in fact, are trunk routes, despite the speed and geographical extent of our rail lines. Shorter routes <a href="https://sprs.parl.gov.sg/search/topic?reportid=008_20100816_S0006_T0004" target="_blank">aren&rsquo;t necessarily more cost-effective</a> due to the limiting factors of fleet maintenance and drivers&rsquo; wages (as much as Minister Ang Wei Neng <a href="https://sprs.parl.gov.sg/search/sprs3topic?reportid=budget-1585" target="_blank">would like to think otherwise</a>). And even if shorter services are more reliable, one can&rsquo;t deny the added perceived annoyance and trip variability that multiple, brief transfers can add to an otherwise-seamless journey. If you&rsquo;re searching for an station entrance, crossing to a bus stop, or waiting for a couple of bunched-up feeders in a strange neighbourhood, all that wait time is going to add up.
         </p>
         <p>
-            What the data can&rsquo;t tell us, however, are the associated impressions of mobility that have run deep over the years along these long bus lines. I can&rsquo;t tell you how many times the 162 has saved my life running past midnight along Plaza Singapura on a Friday night, or the weekly relief at taking the 52 back down Marymount Road from Maju Camp. It can&rsquo;t tell you how I know the shape of the 410 both ways from the drumming of my skull against the hideous beige walls. And the data is silent on that one elderly man in Tanglin Halt who can no longer take the bus from his doorstep to visit his old friends all along the southwest coast, from Clementi to Redhill and beyond. [TODO: Conclusion]
+            What the number can&rsquo;t tell us, however, are the associated impressions of mobility that have run deep over the years along these long bus lines. I can&rsquo;t tell you how many times the 162 has saved my life running past midnight along Plaza Singapura on a Friday night, or the weekly relief at taking the 52 back down Marymount Road from Maju Camp. It can&rsquo;t tell you how I know the shape of the 410 both ways from the drumming of my skull against the hideous beige walls. And the data is silent on that one elderly man in Tanglin Halt, who can no longer take the bus from his doorstep to visit his old friends all along the southwest coast, from Clementi to Redhill and beyond&hellip;
+        </p>
+        <p>
+            All this, too, is part of the data. The stories and the numbers don&rsquo;t lie. In our hearts and on our roads, the long bus ride is here to stay. :)
         </p>
     </div>
 
     <div class="block gutter" style="height:300px;">
         <!-- for bottom margin in the end -->
         <div>
-            <p style="text-align:right;">
-                </br>
-                <small>Source(s): etc. etc. etc.</small>
-            </p>
-            <p style="text-align:right;">
-                <small>Credits: etc. etc. etc.</small>
+            <p>
+                <small>
+                    Sources:
+                    <a href="https://data.gov.sg/dataset/master-plan-2019-subzone-boundary-no-sea" target="_blank">Data.gov.sg - Master Plan Subzone Boundaries</a>, 
+                    <a href="https://datamall.lta.gov.sg" target="_blank">LTA DataMall - Bus Routes and Stops</a>
+                </small>
+            </br>
+                <small>
+                    Credits:
+                    <a href="https://github.com/d3/d3" target="_blank">d3.js by Mike Bostock</a>
+                </small>
+            </br>
+                <small>
+                    <em>Best viewed on desktop.</em>
+                </small>
             </p>
         </div>
     </div>
@@ -135,4 +157,3 @@
 
 </body>
 </html>
-

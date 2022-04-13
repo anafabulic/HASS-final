@@ -76,12 +76,18 @@ a:hover   {color: var(--org); }
 .col-25 {width: 25.0%; float: left;}
 .col-33 {width: 33.3%; float: left;}
 .col-50 {width: 50.0%; float: left;}
+.leftcol p {text-align: left;}
+.rightcol p {text-align: right;}
 @media all and (max-width:1200px) {
-    body {font-size: 1em;}
+    body {font-size: 0.75em;}
     .col-33, .col-25 {width: 50%;}
 }
 @media all and (max-width:600px) {
-    body {font-size: 1em;}
+    body {font-size: 0.75em;}
+    p {line-height: 1.8em; margin: 0 0 10%;}
+    .grid {width: 100%;}
+    .leftcol p {text-align: center;}
+    .rightcol p {text-align: center;}
     .col-50, .col-33, .col-25 {width: 100%; float: none;}
 }  
 
@@ -94,38 +100,19 @@ a:hover   {color: var(--org); }
     stroke: var(--bg0);
     stroke-width: 1.0px;
 }
+.inset {
+    stroke: var(--bg3);
+    stroke-opacity: 0.7;
+    stroke-width: 0.5px;
+}
 .svg_ab_pts {
     fill-opacity: 0.8;
-}
-.svg_ab_lgd_txt {
-    font-size: 1.1em;
-    font-family: 'Inconsolata', sans-serif;
 }
 .svg_ls_input {
     position: relative;
     display: inline-block;
 }
-::-webkit-input-placeholder {
-    font-style: italic;
- }
- :-moz-placeholder {
-    font-style: italic;  
- }
- ::-moz-placeholder {
-    font-style: italic;  
- }
- :-ms-input-placeholder {  
-    font-style: italic; 
- }
-input[type=text] {
-    border: 1px solid var(--fg4);
-    background-color: #f1f1f1;
-    padding: 6px;
-    font-size: 1.3em;
-    width: 100%;
-    height: 1.5em;
-}
-.svg_ls_ln {
+.svg_ls_g_ln {
     fill: none;
     stroke-width: 2.5px;
     stroke: orangered;
@@ -141,25 +128,54 @@ input[type=text] {
 .svg_rl_dropdown {
     text-align: center;
 }
+.svg_rl_g_ln {
+    fill: none;
+    stroke-width: 5px;
+    stroke: orangered;
+}
 .svg_hs_dropdown {
     text-align: center;
 }
 .svg_hs_bars {
-    fill: var(--fg3);
-    stroke-width: 1px;
-    stroke: transparent;
+    fill: var(--org);
+    stroke: none;
 }
 .axis_text {
-    font-size: 1.1em;
+    font-size: 1em;
     font-family: 'Inconsolata', sans-serif;
 }
-.tooltip {
-    position: absolute;
-    text-align: left;
-    font-size: 0.5em;
-    margin: 0.5em;
-    padding: 0.125em;
-    background: var(--bg0);
+.dropdown {
+    border: 1px solid var(--fg4);
+    font-size: 1.1em;
+    font-family: 'Inconsolata', sans-serif;
+    color: var(--fg1);
+    background-color: #eee;
+    padding: 5px;
+}
+::-webkit-input-placeholder {
+    font-style: italic;
+    font-family: 'Inconsolata';
+ }
+ :-moz-placeholder {
+    font-style: italic;
+    font-family: 'Inconsolata';
+ }
+ ::-moz-placeholder {
+    font-style: italic;
+    font-family: 'Inconsolata';
+ }
+ :-ms-input-placeholder {  
+    font-style: italic;
+    font-family: 'Inconsolata';
+ }
+input[type=text] {
+    border: 1px solid var(--fg4);
+    background-color: #eee;
+    padding: 5px;
+    font-size: 1.1em;
+    font-family: 'Inconsolata', sans-serif;
+    width: 100%;
+    height: 1.3em;
 }
 .slider {
     -webkit-appearance: none;

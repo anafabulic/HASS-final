@@ -178,17 +178,37 @@ Promise.all(
                 value: Math.round((max - ((max-min)*i/(lvls-1)))/10)*10,
                 ord: i + 1
             });
-            // note: algorithm omits a 'min' entry because it's miniscule here
-            //       also, algo rounds each legend value (up or down) to nearest 10 
+            // rounds each legend value (up or down) to nearest 10 
         }
+        keys.push({
+            value: min + 1,
+            ord: lvls
+        })
         return keys;
     }
 
     // Draw legend
-    svg_ab.append("g")
+
+    let svg_ab_lgd = svg_ab.append("g")
         .attr("class", "svg_ab_lgd")
-        .attr("transform", "translate(" + (w * 0.65).toString() + "," + (h * 0.60).toString() + ")" )
-        .selectAll("circle")
+        .attr("transform", "translate(" + (w * 0.80).toString() + "," + (h * 0.60).toString() + ")" )
+    
+    svg_ab_lgd.append("rect")
+        .attr("x", "-10")
+        .attr("y", "5")
+        .attr("height", (0.28*h).toString())
+        .attr("width", "160")
+        .attr("fill", "var(--bg1)")
+        .attr("fill-opacity", "0.7");
+    svg_ab_lgd.append("rect")
+        .attr("x", "-12")
+        .attr("y", "5")
+        .attr("height", (0.28*h).toString())
+        .attr("width", "25")
+        .attr("fill", "var(--bg3)")
+        .attr("fill-opacity", "0.7");
+
+    svg_ab_lgd.selectAll("circle")
         .data(svg_ab_getlgd(ranges.svg_ab[0], ranges.svg_ab[1], 5))
         .join(
             function(enter) {
@@ -212,9 +232,15 @@ Promise.all(
             function(enter) {
                 return enter
                     .append("text")
-                    .attr("class", "svg_ab_lgd_txt")
+                    .attr("class", "axis_text")
                     .attr("transform",d => `translate(${w * 0.02}, ${d.ord*30 + (h * 0.007)})`)
-                    .text(d => `${d.value.toString()} bus routes`);
+                    .text(d => {
+                        if (d.value < 10) {
+                            return `\u2000${d.value.toString()} bus routes`
+                        } else {
+                            return `${d.value.toString()} bus routes`
+                        };
+                    });
             }
         )
 
@@ -237,9 +263,10 @@ Promise.all(
         .attr("list", "stops")
         .attr("name", "ls_input")
         .attr("id", "ls_input")
-        .attr("placeholder", "Enter bus route...\u2000");
+        .attr("placeholder", "\u2000(e.g. NR8, 33, 162M)\u2000");
     let route_list = routes.map(({route}) => {return route});
 
+    // rudimentary autocomplete as 'datalist' - works on desktop and some mobiles
     d3.select("form.svg_ls_input")
         .append("datalist")
         .attr("id", "stops")
@@ -288,27 +315,27 @@ Promise.all(
             .attr("id", "svg_ls_routes");
 
     // Draw the links
-    function update_ls(data) {
+    function update_ls(data, d3_selection, render_time, classname) {
         data.forEach(function(item) {
-            svg_ls_g.selectAll("path")
+            d3_selection.selectAll("path")
                 .data(item.route)
                 .join(
                     function(enter) {
                         return enter
                             .append("path")
-                            .attr("class", "svg_ls_ln")
+                            .attr("class", classname)
                             .attr("stroke-opacity", "0.01");
                     },
                     function(update) {
                         return update
                             .transition()
-                            .duration(750)
+                            .duration(render_time*0.75)
                             .attr("stroke-opacity", "0.01");
                     },
                     function(exit) {
                         return exit
                             .transition()
-                            .duration(750)
+                            .duration(render_time*0.75)
                             .attr("stroke-opacity", "0.01")
                             .on("end", function() {
                                 d3.select(this).remove();
@@ -316,14 +343,14 @@ Promise.all(
                     }
                 )
                 .transition()
-                .duration(1000)
-                .attr("stroke-opacity", "0.30")
+                .duration(render_time*1.00)
+                .attr("stroke-opacity", "0.75")
                 .attr("d",geopath);
         });
     };
 
     let svg_ls_text = svg_ls.append("g")
-        .attr("id", "svg_ls_txt");
+        .attr("class", "svg_ls_text");
 
     function update_ls_text(data) {
         // Add pointer to label
@@ -386,18 +413,13 @@ Promise.all(
                         .attr("transform", "translate(700,490)");
                 },
                 function(exit) {
-                    return exit
-                        .on("end", function() {
-                            d3.select(this).remove();
-                        });
+                    return exit.remove();
                 }
             );
         
         textspace.text(d => "Bus " + d.route_no)
             .attr("dy","0")
             .attr("font-size", "1.9em")
-            .transition()
-            .duration(1000)
             .attr("transform", "translate(700,490)");
         
         textspace.append("tspan")
@@ -417,12 +439,12 @@ Promise.all(
     // Set initial values
     let initialValue = "51";
     let filteredArray = svg_ls_data.filter(item => item.route_no === `${initialValue}`);
-    update_ls(filteredArray);
+    update_ls(filteredArray, svg_ls_g, 1000, "svg_ls_g_ln");
     update_ls_text(filteredArray);
 
     // Listen to the input box
     d3.select("#ls_input").on("input", function(d) {
-        let selectedValue = this.value;
+        let selectedValue = this.value.toUpperCase();
         let filteredArray = svg_ls_data.filter(item => item.route_no === `${selectedValue}`);
         // Hacky update trick: update_ls_text exits nicely on empty array, but update_ls panics if there are no elements in route[].
         // Hence: do update_ls_text, then populate route if filteredArray is empty, then do update_ls.
@@ -437,7 +459,7 @@ Promise.all(
                 ordinal: null
             });
         };
-        update_ls(filteredArray);
+        update_ls(filteredArray, svg_ls_g, 1000, "svg_ls_g_ln");
     });
 
     // The long, straight lines crossing the island are normal. They represent cross-island services with very large distances between stops.
@@ -470,16 +492,43 @@ Promise.all(
     let svg_rl_viewlimit2 = 100; // Limit at which lollipops become bars
     let svg_rl_init = 25; // Initialise zoom level at this value
 
-    // Define selection to render on
+    // Define selections to render on
     let svg_rl_bc = svg_rl.append("g")
         .attr("id", "svg_rl_chart")
         .attr("transform", "translate(100,40)");
     let svg_rl_bars = svg_rl_bc.append("g")
         .attr("class", "svg_rl_bars");
+    let svg_rl_interaction = svg_rl_bc.append("g")
+        .attr("class", "svg_rl_interaction");
     let svg_rl_x = svg_rl_bc.append("g");
     let svg_rl_x2 = svg_rl_bc.append("g");
     let svg_rl_y = svg_rl_bc.append("g");
-
+    let svg_rl_x_lab = svg_rl_bc.append("text")
+        .attr("class", "axis_text")
+        .attr("x", w*0.825)
+        .attr("y", -h*0.02);
+    let svg_rl_inset = svg_rl_bc.append("svg")
+        .attr("style", "overflow:visible;")
+        .attr("x", w*0.45)
+        .attr("y", h*0.50)
+        .attr("width", w*0.50)
+        .attr("height", h*0.35)
+        .attr("viewBox", "0 0 " + w + " " + h);
+    let svg_rl_inset_basemap = svg_rl_inset.append("g")
+        .attr("class", "basemap inset");
+    
+    // Add inset map
+    svg_rl_inset_basemap.selectAll("path")
+        .data(basemap.features)
+        .enter()
+        .append("path")
+        .attr("d", geopath)
+        .attr("opacity", 0); // start transparent
+    let svg_rl_g = svg_rl_inset.append("g")
+        .attr("class", "svg_rl_g"); // to append busroutes on mouseover of lollipops
+    let svg_rl_inset_text = svg_rl_inset.append("g")
+        .attr("class", "svg_rl_inset_text");
+    
     // Attach inputs
     d3.select("div.svg_rl_slider")
         .append("input")
@@ -495,14 +544,15 @@ Promise.all(
     svg_rl_dropdown_form.append("label")
             .attr("for", "rl_dropdown");
     let svg_rl_dropdown_form_select = svg_rl_dropdown_form.append("select")
+        .attr("class", "dropdown")
         .attr("name", "rl_dropdown")
         .attr("id", "rl_dropdown");
     svg_rl_dropdown_form_select.append("option")
         .attr("value", "max_km")
-        .text("Sort routes by length (km)");
+        .text("View routes by length (km)");
     svg_rl_dropdown_form_select.append("option")
         .attr("value", "length")
-        .text("Sort routes by number of stops");
+        .text("View routes by number of stops");
 
     function update_rl(data, slice, factor) {
         // Sort and slice
@@ -510,7 +560,30 @@ Promise.all(
             return b[factor] - a[factor];
         });
         let working_data = data.slice(0,slice);
+
+        // Define arrays for drawing y_scale and map inset
         let y_scale_list = working_data.map(({route}) => {return route});
+        svg_rl_inset_data = [];
+        working_data.forEach(function(item, index) {
+            // Create a geoJSON linestring between consecutive bus stops, then append all linestrings to a single 'links' dataset
+            let stoplist = item.stops; 
+            let links = [];
+            for (var i=0, len=stoplist.length-1; i<len; i++) {
+                links.push({
+                    type: "LineString",
+                    coordinates: [
+                        [stoplist[i].longitude, stoplist[i].latitude],
+                        [stoplist[i+1].longitude, stoplist[i+1].latitude]        
+                    ]
+                });
+            };
+            svg_rl_inset_data.push({
+                route_no: item.route,
+                route: links,
+                length: item.length,
+                max_km: item.max_km,
+            });  
+        });
 
         // Define scales and axes
         let x_scale = d3.scaleLinear()
@@ -524,15 +597,16 @@ Promise.all(
         svg_rl_bars.attr("transform", "translate(0," + y_scale.bandwidth()/2 + ")");
 
         // Setup axes
-        svg_rl_x.call(d3.axisTop(x_scale))
+        svg_rl_x.transition().duration(1000).call(d3.axisTop(x_scale))
             .attr("class", "axis_text svg_rl_x")
-            .attr("transform", "translate(0,-20)");
-        svg_rl_x2.call(d3.axisBottom(x_scale))
+            .attr("transform", "translate(0," + (h * -0.02).toString() + ")");
+        svg_rl_x2.transition().duration(1000).call(d3.axisBottom(x_scale))
             .attr("class", "axis_text svg_rl_x2")
-            .attr("transform", "translate(0," + (h * 0.90).toString() + ")");
+            .attr("transform", "translate(0," + (h * 0.88).toString() + ")");
         svg_rl_y.call(d3.axisLeft(y_scale).tickSizeInner(0))
             .attr("class", "axis_text svg_rl_y");
-        
+        svg_rl_x_lab.text(d => {if (factor == "max_km") {return "km"} else {return "stops"}});
+
         // Remove y-axis labels if too crowded
         // Also hacked together a 'zoom-out' resize rule
         if (slice <= svg_rl_viewlimit) {
@@ -541,6 +615,7 @@ Promise.all(
             d3.select(".svg_rl_y").attr("style", "font-size:0.0em");
         }
 
+        // draw lines of lollipop
         // represent with rect so can 'morph' into a density chart seamlessly with rect-height
         svg_rl_bars.selectAll("rect")
             .data(working_data)
@@ -582,6 +657,7 @@ Promise.all(
                 }
             });
 
+        // draw circles on ends of lollipops
         svg_rl_bars.selectAll("circle")
             .data(working_data)
             .join(
@@ -611,61 +687,92 @@ Promise.all(
                 };
             })
             .attr("cx", d => x_scale(d[factor]));
-        
-        // calculate mean
-        let factorchooser = (data, factor) => {
-            return data.map((item) => {return item[factor]});
-        }
-        let data_mean = [d3.mean(factorchooser(data, factor))];
-        
-        // add mean line
-        svg_rl_bars.selectAll("line").remove();
-        svg_rl_bars.append("g")
-            .attr("class", "svg_rl_meandian")
-            .selectAll("line")
-            .data(data_mean)
+
+        // add invisible selection rects
+        svg_rl_interaction.selectAll("rect")
+            .data(working_data)
             .join(
                 function(enter) {
                     return enter
-                        .append("line")
-                        .attr("x1", d => x_scale(d))
-                        .attr("x2", d => x_scale(d))
-                        .attr("y1", y_scale(y_scale_list[0]))
-                        .attr("y2", y_scale(y_scale_list[y_scale_list.length - 1]));
-                    },
+                        .append("rect")
+                        .attr("x", x_scale(0) - 50)
+                        .attr("y", d => y_scale(d.route))
+                        .attr("width", "0px")
+                        .attr("stroke-width", "0px")
+                        .attr("fill", "transparent");
+                },
                 function(update) {
                     return update
-                        .remove();
+                        .attr("y", d => y_scale(d.route));
                 },
                 function(exit) {
                     return exit
                         .remove();
                 }
             )
-            .attr("stroke", "var(--blu)")
-            .attr("stroke-width", "1.75px");
-
-        // add caption for mean line
-        svg_rl_bars.selectAll("text").remove();
-        svg_rl_bars.append("g")
-            .attr("class", "svg_rl_meandian_text")
-            .selectAll("text")
-            .data(data_mean)
-            .join(
-                function(enter) {
-                    return enter
-                        .append("text")
-                },
-                function(update) {
-                    return update.remove();
-                },
-                function(exit) {
-                    return exit.remove();
-                }
-            )
-            .attr("transform", d => "translate(" + (x_scale(d)+w*0.015).toString() + "," + (y_scale(y_scale_list[Math.floor(y_scale_list.length/2)])-h*0.01).toString() + ")")
-            .attr("class", "axis_text")
-            .text(d => "mean \u2248 " + Math.round(d));
+            .attr("width", d => `${x_scale(d[factor])+70}px`)
+            .attr("height", (0.85*h/y_scale_list.length).toString())
+            .on("mouseover", (event, d) => {
+                // make map visible
+                svg_rl_inset_basemap.selectAll("path")
+                    .transition()
+                    .duration(250)
+                    .attr("opacity", "1.0");
+                // draw busroute on map
+                let filteredArray = svg_rl_inset_data.filter(item => item.route_no === d.route);
+                update_ls(filteredArray, svg_rl_g, 200, "svg_rl_g_ln"); // data, d3_selection, transition length (ms), class name
+                // draw label
+                let textspace = svg_rl_inset_text.selectAll("text")
+                    .data(filteredArray)
+                    .join(
+                        function(enter) {
+                            return enter
+                                .append("text")
+                                .attr("style", "font-family:'Inconsolata';")
+                                .attr("transform", "translate(650,400)");
+                        }
+                    );
+                textspace.text("Bus")
+                    .attr("dy", "0")
+                    .attr("font-size", "3.0em")
+                    .attr("transform", "translate(650,400)");
+                textspace.append("tspan")
+                    .attr("dy", "0.9em")
+                    .attr("x", -5)
+                    .attr("font-size", "1.8em")
+                    .text(d => d.route_no);
+                textspace.append("tspan")
+                    .attr("dy", "1.2em")
+                    .attr("x", 0)
+                    .attr("font-size", "1.0em")
+                    .text(d => {
+                        if(factor == "max_km") {
+                            return d[factor] + " km"
+                        } else {
+                            return d[factor] + " stops"
+                        }
+                    })
+                // draw highlight rectangle
+                d3.select(event.currentTarget)
+                    .attr("stroke", "var(--fg4)")
+                    .attr("stroke-width", "0.5px")
+                    .attr("fill", "var(--gry)")
+                    .attr("fill-opacity", "0.2");
+                
+            })
+            .on("mouseout", (event, d) => {
+                svg_rl_g.selectAll("path")
+                    .remove();
+                svg_rl_inset_basemap.selectAll("path")
+                    .transition()
+                    .duration(250)
+                    .attr("opacity", "0");
+                svg_rl_inset_text.selectAll("text")
+                    .remove();
+                d3.select(event.currentTarget)
+                    .attr("stroke", "none")
+                    .attr("fill", "transparent");
+            });
     };
 
     // very magic function (DO NOT TOUCH)
@@ -708,8 +815,23 @@ Promise.all(
     let svg_hs_chart = svg_hs.append("g")
         .attr("class", "svg_hs_chart")
         .attr("transform", "translate(" + (w * 0.1).toString() + "," + (h*0.1).toString() + ")" );
+    let svg_hs_chart_bars = svg_hs_chart.append("g")
+        .attr("class", "svg_hs_chart_bars");
     let svg_hs_axes = svg_hs_chart.append("g")
         .attr("class", "svg_hs_axes");
+    let svg_hs_x_lab = svg_hs_chart.append("text")
+        .attr("class", "axis_text")
+        .attr("text-anchor", "middle")
+        .attr("x", w*0.40)
+        .attr("y", h*0.88);
+    let svg_hs_y_lab = svg_hs_chart.append("text")
+        .attr("class", "axis_text")
+        .attr("text-anchor", "middle")
+        .attr("x", -w*0.04)
+        .attr("y", 0)
+        .text("n");
+    let svg_hs_meandian = svg_hs_chart.append("g")
+        .attr("class", "svg_hs_meandian");
 
     // Attach controls
     let svg_hs_dropdown_form = d3.select("div.svg_hs_dropdown")
@@ -717,14 +839,15 @@ Promise.all(
     svg_hs_dropdown_form.append("label")
             .attr("for", "hs_dropdown");
     let svg_hs_dropdown_form_select = svg_hs_dropdown_form.append("select")
+        .attr("class", "dropdown")
         .attr("name", "hs_dropdown")
         .attr("id", "hs_dropdown");
     svg_hs_dropdown_form_select.append("option")
         .attr("value", "max_km")
-        .text("Sort routes by length (km)");
+        .text("View routes by length (km)");
     svg_hs_dropdown_form_select.append("option")
         .attr("value", "length")
-        .text("Sort routes by number of stops");
+        .text("View routes by number of stops");
 
     // Define axes
     let svg_hs_x = svg_hs_axes.append("g")
@@ -752,15 +875,16 @@ Promise.all(
         
         svg_hs_x.transition().duration(1000).call(d3.axisBottom(x_scale));
         svg_hs_y.transition().duration(1000).call(d3.axisLeft(y_scale));
+        svg_hs_x_lab.text(d => {if (factor == "max_km") {return "km"} else {return "stops"}});
         
-        svg_hs_chart.selectAll("rect")
+        svg_hs_chart_bars.selectAll("rect")
             .data(bars)
             .join(
                 function(enter) {
                     return enter
                         .append("rect")
                         .attr("x", 1)
-                        .attr("width", d => x_scale(d.x1) - x_scale(d.x0) - 1 )
+                        .attr("width", d => x_scale(d.x1) - x_scale(d.x0) - 3 )
                         .attr("height", "0");
                 }, 
                 function(update) {
@@ -776,6 +900,63 @@ Promise.all(
             .duration(1000)
             .attr("height", d => (h * 0.8) - y_scale(d.length))
             .attr("transform", d => "translate(" + x_scale(d.x0) + "," + y_scale(d.length) + ")" );
+        
+        // calculate mean
+        let factorchooser = (data, factor) => {
+            return data.map((item) => {return item[factor]});
+        }
+        let data_mean = [d3.mean(factorchooser(data, factor))];
+            
+        // add mean line
+        svg_hs_meandian.selectAll("line").remove();
+        svg_hs_meandian.selectAll("line")
+            .data(data_mean)
+            .join(
+                function(enter) {
+                    return enter
+                        .append("line")
+                        .attr("x1", d => x_scale(d))
+                        .attr("x2", d => x_scale(d))
+                        .attr("y1", 0)
+                        .attr("y2", y_scale(0));
+                    },
+                function(update) {
+                    return update
+                        .remove();
+                },
+                function(exit) {
+                    return exit
+                        .remove();
+                }
+            )
+            .attr("stroke", "blue")
+            .attr("stroke-width", 3)
+            .attr("stroke-opacity", 0.4);
+        // add mean label
+        svg_hs_meandian.selectAll("text").remove();
+        svg_hs_meandian.selectAll("text")
+            .data(data_mean)
+            .join(
+                function(enter) {
+                    return enter
+                        .append("text")
+                },
+                function(update) {
+                    return update.remove();
+                },
+                function(exit) {
+                    return exit.remove();
+                }
+            )
+            .attr("transform", d => "translate(" + (x_scale(d)+w*0.015).toString() + "," + y_scale(0)*0.1 + ")")
+            .attr("class", "axis_text")
+            .text(d => {
+                if (factor == "max_km") {
+                    return "mean \u2248 " + Math.round(d) + " km"
+                } else {
+                    return "mean \u2248 " + Math.round(d) + " stops"
+                };
+            });
 
     };
 
