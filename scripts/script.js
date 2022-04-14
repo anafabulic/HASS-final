@@ -266,7 +266,7 @@ Promise.all(
     let route_list = routes.map(({route}) => {return route});
 
     // rudimentary autocomplete as 'datalist' - works on desktop and some mobiles
-    // first, sort route_list by pseudo-numeric order
+    // first, sort route_list by pseudo-numeric order (remove letters and treat as ints)
     let route_list_numeric = route_list.sort((a,b) => {
         return a.replace(/[a-zA-Z ]/g, "") - b.replace(/[a-zA-Z ]/g, "");
     });
@@ -544,8 +544,7 @@ Promise.all(
         .attr("type", "range")
         .attr("min", "0")
         .attr("max", "100")
-        .attr("value", "100")
-        .attr("orient", "vertical")
+        .attr("value", "0")
         .attr("name", "rl_scroller")
         .attr("id", "rl_scroller")
         .attr("class", "scroller");
@@ -553,7 +552,7 @@ Promise.all(
     let rl_scroll_resize = d => d3.select("input#rl_scroller")
         .attr(
             "style", `
-                height:${document.getElementById("route_lengths").clientHeight*0.9}px;
+                width:${document.getElementById("route_lengths").clientHeight*0.9}px;
                 margin-top: ${document.getElementById("route_lengths").clientHeight*0.05}px;
             `
         )
@@ -646,7 +645,7 @@ Promise.all(
             .attr("x", -w*0.02)
             .attr("text-anchor", "end")
             .attr("font-size", "0.8em")
-            .text(`#${start+1}\u2013${Math.round(start+slice)+1}`);
+            .text(`#${start+1}\u2013${Math.round(start+slice)}`);
         // Remove y-axis labels if too crowded
         // Also hacked together a 'zoom-out' resize rule
         if (slice <= svg_rl_viewlimit) {
@@ -729,13 +728,14 @@ Promise.all(
             .attr("cx", d => x_scale(d[factor]));
 
         // add invisible selection rects
+        let text_offset = 73; // magic number to make sure rectangle encompasses y_labs at low slices
         svg_rl_interaction.selectAll("rect")
             .data(working_data)
             .join(
                 function(enter) {
                     return enter
                         .append("rect")
-                        .attr("x", x_scale(0) - 55)
+                        .attr("x", x_scale(0) - text_offset)
                         .attr("y", d => y_scale(d.route))
                         .attr("width", "0px")
                         .attr("stroke-width", "0px")
@@ -750,7 +750,7 @@ Promise.all(
                         .remove();
                 }
             )
-            .attr("width", d => `${x_scale(d[factor])+75}px`)
+            .attr("width", d => `${x_scale(d[factor])+text_offset+20}px`)
             .attr("height", 0.85*h/y_scale_list.length)
             .on("mouseover", (event, d) => {
                 // make map visible
@@ -828,7 +828,7 @@ Promise.all(
 
     // very magic function to make slider smooth (DO NOT TOUCH)
     function svg_rl_parse_slide(x) {
-        // smooths range of [0,100] to exponential domain
+        // interpolates range of [0,100] to exponential domain
         // x0-x3 are the breakpoints in input
         // y0-y3 are the breakpoints in output
         let x0 =  0, y0 =  8;
@@ -845,23 +845,26 @@ Promise.all(
     };
     // not-so-magic function to make scrolling work
     function svg_rl_parse_scroll(x) {
-        return (100-x);
-    }
+        return (x);
+    };
 
     // initialise variables that various events will update
     let svg_rl_facet = "max_km"; // length or max_km
     let svg_rl_slice = svg_rl_init;
     let svg_rl_scroll = 0;
     update_rl(routes, svg_rl_init, 0, svg_rl_facet, 0); // initialise
-
+    
     // listen for zoom slider events
     d3.select("#rl_slider").on("input", function(d) {
         let raw_value = this.value;
         svg_rl_slice = svg_rl_parse_slide(raw_value);
+        // similar magic function to svg_rl_parse_scroll
+        // interpolate a taller scrollbar thumb when zoom (i.e. slice) is greater
         let x0 =   0, y0 = 15;
         let x1 = 100, y1 = document.getElementById("route_lengths").clientHeight*0.9;
         let thumb_height = (y0 + ((y1-y0)/(x1-x0)*((svg_rl_slice/routes.length*100)-x0)) );
         document.documentElement.style.setProperty("--thumb_height", `${thumb_height}px`);
+        console.log("zoomed " + svg_rl_slice);
         update_rl(routes, svg_rl_slice, svg_rl_scroll, svg_rl_facet, 1000); // data, slice, factor
     });
 
@@ -869,6 +872,7 @@ Promise.all(
     d3.select("#rl_scroller").on("input", function(d) {
         let raw_value = this.value;
         svg_rl_scroll = svg_rl_parse_scroll(raw_value);
+        console.log("scrolled " + svg_rl_scroll);
         update_rl(routes, svg_rl_slice, svg_rl_scroll, svg_rl_facet, 250); // data, slice, factor
     });
 
