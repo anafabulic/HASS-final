@@ -144,6 +144,10 @@ a:hover   {color: var(--org); }
     font-size: 1em;
     font-family: 'Inconsolata', sans-serif;
 }
+.svg_rl_y {
+    /* for hacky init. purposes */
+    stroke-width: 0;
+}
 .dropdown {
     border: 1px solid var(--fg4);
     font-size: 1.1em;
@@ -195,12 +199,45 @@ input[type=text] {
     height: 15px;
     border-radius: 50%; 
     background: var(--org);
-    cursor: pointer;
+    cursor: e-resize;
 }
 .slider::-moz-range-thumb {
     width: 15px;
     height: 15px;
     border-radius: 50%;
     background: var(--org);
-    cursor: pointer;
+    cursor: e-resize;
+}
+.scroller .vertical input[type="range"] {
+    position: absolute;
+    -webkit-appearance: slider-vertical;
+	writing-mode: bt-lr;
+    top: 100px;
+}
+.scroller {
+    -webkit-appearance: none;
+    width: 5px;
+    /* height: defined in script.js (!!) */
+    background: var(--bg2);
+    border-radius: 5px;
+    outline: none;
+    opacity: 0.7;
+    -webkit-transition: .2s;
+    transition: opacity .2s;
+}
+.scroller::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 15px;
+    height: 15px;
+    border-radius: 50%; 
+    background: var(--org);
+    cursor: n-resize;
+}
+.scroller::-moz-range-thumb {
+    width: 15px;
+    height: 15px;
+    border-radius: 50%; 
+    background: var(--org);
+    cursor: n-resize;
 }

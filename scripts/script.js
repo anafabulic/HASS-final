@@ -31,7 +31,6 @@ let mean = (array) => {
 // 3. Median calculator
 let median = (values) => {
     if(values.length ===0) throw new Error("No inputs");
-
     values.sort((a,b) => {
         return a - b;
     });
@@ -166,7 +165,7 @@ Promise.all(
         .transition()
         .delay(d => (1 - cs_svg_ab(d.count))*1250) // fancy fade-in based on d.count
         .duration(750)
-        .attr("r", d => cs_svg_r_maker(d.count).toString() + "px")
+        .attr("r", d => cs_svg_r_maker(d.count) + "px")
         .attr("fill-opacity", "0.85")
         .attr("fill", d => d3.interpolateInferno(cs_svg_ab(d.count)));
 
@@ -191,19 +190,19 @@ Promise.all(
 
     let svg_ab_lgd = svg_ab.append("g")
         .attr("class", "svg_ab_lgd")
-        .attr("transform", "translate(" + (w * 0.80).toString() + "," + (h * 0.60).toString() + ")" )
+        .attr("transform", "translate(" + (w * 0.80) + "," + (h * 0.60) + ")" )
     
     svg_ab_lgd.append("rect")
         .attr("x", "-10")
         .attr("y", "5")
-        .attr("height", (0.28*h).toString())
+        .attr("height", (0.28*h))
         .attr("width", "160")
         .attr("fill", "var(--bg1)")
         .attr("fill-opacity", "0.7");
     svg_ab_lgd.append("rect")
         .attr("x", "-12")
         .attr("y", "5")
-        .attr("height", (0.28*h).toString())
+        .attr("height", (0.28*h))
         .attr("width", "25")
         .attr("fill", "var(--bg3)")
         .attr("fill-opacity", "0.7");
@@ -221,7 +220,7 @@ Promise.all(
         )
         .transition()
         .duration(750)
-        .attr("r", d => cs_svg_r_maker(d.value).toString() + "px")
+        .attr("r", d => cs_svg_r_maker(d.value) + "px")
         .attr("fill-opacity", "0.85")
         .attr("fill", d => d3.interpolateInferno(cs_svg_ab(d.value)));
 
@@ -495,9 +494,12 @@ Promise.all(
         .attr("class", "svg_rl_bars");
     let svg_rl_interaction = svg_rl_bc.append("g")
         .attr("class", "svg_rl_interaction");
-    let svg_rl_x = svg_rl_bc.append("g");
-    let svg_rl_x2 = svg_rl_bc.append("g");
-    let svg_rl_y = svg_rl_bc.append("g");
+    let svg_rl_x = svg_rl_bc.append("g")
+        .attr("class", "axis_text svg_rl_x");
+    let svg_rl_x2 = svg_rl_bc.append("g")
+        .attr("class", "axis_text svg_rl_x2");
+    let svg_rl_y = svg_rl_bc.append("g")
+        .attr("class", "axis_text svg_rl_y");
     let svg_rl_x_lab = svg_rl_bc.append("text")
         .attr("class", "axis_text")
         .attr("x", w*0.825)
@@ -534,10 +536,30 @@ Promise.all(
         .attr("name", "rl_slider")
         .attr("id", "rl_slider")
         .attr("class", "slider");
+    d3.select("div.svg_rl_scroller")
+        .append("input")
+        .attr("type", "range")
+        .attr("min", "0")
+        .attr("max", "100")
+        .attr("value", "100")
+        .attr("orient", "vertical")
+        .attr("name", "rl_scroller")
+        .attr("id", "rl_scroller")
+        .attr("class", "scroller");
+    // makes the scrollbar responsive - don't ask
+    let rl_scroll_resize = d => d3.select("input#rl_scroller")
+        .attr(
+            "style", `
+                height:${document.getElementById("route_lengths").clientHeight*0.9}px;
+                margin-top: ${document.getElementById("route_lengths").clientHeight*0.05}px;
+            `
+        )
+    rl_scroll_resize();
+    d3.select(window).on('resize', rl_scroll_resize);
     let svg_rl_dropdown_form = d3.select("div.svg_rl_dropdown")
         .append("form");
     svg_rl_dropdown_form.append("label")
-            .attr("for", "rl_dropdown");
+        .attr("for", "rl_dropdown");
     let svg_rl_dropdown_form_select = svg_rl_dropdown_form.append("select")
         .attr("class", "dropdown")
         .attr("name", "rl_dropdown")
@@ -549,12 +571,13 @@ Promise.all(
         .attr("value", "length")
         .text("View routes by number of stops");
 
-    function update_rl(data, slice, factor) {
+    function update_rl(data, slice, scroll, factor) {
         // Sort and slice
         data.sort((a,b) => {
             return b[factor] - a[factor];
         });
-        let working_data = data.slice(0,slice);
+        let start = Math.round(scroll/100*(data.length-slice));
+        let working_data = data.slice(start, Math.round(start+slice));
 
         // Define arrays for drawing y_scale and map inset
         let y_scale_list = working_data.map(({route}) => {return route});
@@ -592,22 +615,39 @@ Promise.all(
         svg_rl_bars.attr("transform", "translate(0," + y_scale.bandwidth()/2 + ")");
 
         // Setup axes
-        svg_rl_x.transition().duration(1000).call(d3.axisTop(x_scale))
-            .attr("class", "axis_text svg_rl_x")
-            .attr("transform", "translate(0," + (h * -0.02).toString() + ")");
-        svg_rl_x2.transition().duration(1000).call(d3.axisBottom(x_scale))
-            .attr("class", "axis_text svg_rl_x2")
-            .attr("transform", "translate(0," + (h * 0.88).toString() + ")");
-        svg_rl_y.call(d3.axisLeft(y_scale).tickSizeInner(0))
-            .attr("class", "axis_text svg_rl_y");
+        svg_rl_x.transition()
+            .duration(1000)
+            .call(d3.axisTop(x_scale))
+            .attr("transform", "translate(0," + (h * -0.02) + ")");
+        svg_rl_x2.transition()
+            .duration(1000)
+            .call(d3.axisBottom(x_scale))
+            .attr("transform", "translate(0," + (h * 0.88) + ")");
+        svg_rl_y.transition()
+            .duration(500) // snappier transition = illusion of control
+            .call(d3.axisLeft(y_scale)
+            .tickSizeInner(0));
+        
+        // Chart labels
         svg_rl_x_lab.text(d => {if (factor == "max_km") {return "km"} else {return "stops"}});
-
+        svg_rl_x_lab.append("tspan")
+            .attr("dy", -h*0.02)
+            .attr("x", -w*0.02)
+            .attr("text-anchor", "end")
+            .attr("font-size", "0.8em")
+            .text(`Showing`);
+        svg_rl_x_lab.append("tspan")
+            .attr("dy", "1.0em")
+            .attr("x", -w*0.02)
+            .attr("text-anchor", "end")
+            .attr("font-size", "0.8em")
+            .text(`#${start+1}\u2013${Math.round(start+slice)+1}`);
         // Remove y-axis labels if too crowded
         // Also hacked together a 'zoom-out' resize rule
         if (slice <= svg_rl_viewlimit) {
-            d3.select(".svg_rl_y").attr("style", "font-size:" + ((1-(slice/svg_rl_viewlimit))*2.5).toString() + "em;stroke-width:0px;font:'Inconsolata',sans-serif;");
+            d3.select(".svg_rl_y").attr("style", "font-size:" + ((1-(slice/svg_rl_viewlimit))*2.5) + "em;stroke-width:0px;font-family:'Inconsolata';");
         } else {
-            d3.select(".svg_rl_y").attr("style", "font-size:0.0em");
+            d3.select(".svg_rl_y").attr("style", "font-size:0.0em;stroke-width:1px;");
         }
 
         // draw lines of lollipop
@@ -676,7 +716,7 @@ Promise.all(
             .duration(1000)
             .attr("r", d => {
                 if (slice <= svg_rl_viewlimit2) {
-                    return (((1-(slice/svg_rl_viewlimit2))*2.5)+2).toString() + "px";
+                    return (((1-(slice/svg_rl_viewlimit2))*2.5)+2) + "px";
                 } else {
                     return "0px";
                 };
@@ -690,7 +730,7 @@ Promise.all(
                 function(enter) {
                     return enter
                         .append("rect")
-                        .attr("x", x_scale(0) - 50)
+                        .attr("x", x_scale(0) - 55)
                         .attr("y", d => y_scale(d.route))
                         .attr("width", "0px")
                         .attr("stroke-width", "0px")
@@ -705,8 +745,8 @@ Promise.all(
                         .remove();
                 }
             )
-            .attr("width", d => `${x_scale(d[factor])+70}px`)
-            .attr("height", (0.85*h/y_scale_list.length).toString())
+            .attr("width", d => `${x_scale(d[factor])+75}px`)
+            .attr("height", 0.85*h/y_scale_list.length)
             .on("mouseover", (event, d) => {
                 // make map visible
                 svg_rl_inset_basemap.selectAll("path")
@@ -742,9 +782,20 @@ Promise.all(
                     .attr("font-size", "1.0em")
                     .text(d => {
                         if(factor == "max_km") {
-                            return d[factor] + " km"
+                            return d["max_km"] + " km"
                         } else {
-                            return d[factor] + " stops"
+                            return d["length"] + " stops"
+                        }
+                    })
+                textspace.append("tspan")
+                    .attr("dy", "1.2em")
+                    .attr("x", 0)
+                    .attr("font-size", "1.0em")
+                    .text(d => {
+                        if(factor == "max_km") {
+                            return d["length"] + " stops"
+                        } else {
+                            return d["max_km"] + " km"
                         }
                     })
                 // draw highlight rectangle
@@ -770,8 +821,8 @@ Promise.all(
             });
     };
 
-    // very magic function (DO NOT TOUCH)
-    function svg_rl_smooth(x) {
+    // very magic function to make slider smooth (DO NOT TOUCH)
+    function svg_rl_parse_slide(x) {
         // smooths range of [0,100] to exponential domain
         // x0-x3 are the breakpoints in input
         // y0-y3 are the breakpoints in output
@@ -787,20 +838,33 @@ Promise.all(
             return (y2 + ((y3-y2)/(x3-x2)*(x-x2)) )
         }
     };
+    // not-so-magic function to make scrolling work
+    function svg_rl_parse_scroll(x) {
+        return (100-x);
+    }
 
+    // initialise variables that various events will update
     let svg_rl_facet = "max_km"; // length or max_km
     let svg_rl_slice = svg_rl_init;
-    update_rl(routes, svg_rl_init, svg_rl_facet); // initialise
+    let svg_rl_scroll = 0;
+    update_rl(routes, svg_rl_init, 0, svg_rl_facet); // initialise
 
+    // listen for events
     d3.select("#rl_slider").on("input", function(d) {
         let raw_value = this.value;
-        svg_rl_slice = svg_rl_smooth(raw_value);
-        update_rl(routes, svg_rl_slice, svg_rl_facet); // data, slice, factor
+        svg_rl_slice = svg_rl_parse_slide(raw_value);
+        update_rl(routes, svg_rl_slice, svg_rl_scroll, svg_rl_facet); // data, slice, factor
+    });
+
+    d3.select("#rl_scroller").on("input", function(d) {
+        let raw_value = this.value;
+        svg_rl_scroll = svg_rl_parse_scroll(raw_value);
+        update_rl(routes, svg_rl_slice, svg_rl_scroll, svg_rl_facet); // data, slice, factor
     });
 
     d3.select("#rl_dropdown").on("input", function(d) {
         svg_rl_facet = this.value;
-        update_rl(routes, svg_rl_slice, svg_rl_facet); // data, slice, factor
+        update_rl(routes, svg_rl_slice, svg_rl_scroll, svg_rl_facet); // data, slice, factor
     });
 
 
@@ -809,7 +873,7 @@ Promise.all(
     // Define area to draw on
     let svg_hs_chart = svg_hs.append("g")
         .attr("class", "svg_hs_chart")
-        .attr("transform", "translate(" + (w * 0.1).toString() + "," + (h*0.1).toString() + ")" );
+        .attr("transform", "translate(" + (w*0.1) + "," + (h*0.1) + ")" );
     let svg_hs_chart_bars = svg_hs_chart.append("g")
         .attr("class", "svg_hs_chart_bars");
     let svg_hs_axes = svg_hs_chart.append("g")
@@ -846,7 +910,7 @@ Promise.all(
 
     // Define axes
     let svg_hs_x = svg_hs_axes.append("g")
-        .attr("transform", "translate(0," + (h * 0.8).toString() + ")")
+        .attr("transform", "translate(0," + (h * 0.8) + ")")
         .attr("class", "axis_text")
     let svg_hs_y = svg_hs_axes.append("g")
         .attr("class", "axis_text");
@@ -943,7 +1007,7 @@ Promise.all(
                     return exit.remove();
                 }
             )
-            .attr("transform", d => "translate(" + (x_scale(d)+w*0.015).toString() + "," + y_scale(0)*0.1 + ")")
+            .attr("transform", d => "translate(" + (x_scale(d)+w*0.015) + "," + (y_scale(0)*0.1) + ")")
             .attr("class", "axis_text")
             .text(d => {
                 if (factor == "max_km") {

@@ -67,7 +67,10 @@
     <div class="block gutter">
         <div class="svg_rl_dropdown"></div>
         </br>
-        <svg id="route_lengths"></svg>
+        <div style="position:relative;">
+            <div style="position:absolute;" class="svg_rl_scroller"></div>
+            <svg id="route_lengths"></svg>
+        </div>
         <div class="svg_rl_slider"></div>
         <div>
             <p style="text-align:center;">
@@ -78,7 +81,7 @@
 
     <div class="block gutter">
         <p>
-            Looking at the 554 bus routes provided by <a href="https://DataMall.lta.gov.sg/content/DataMall/en.html" target="_blank">LTA&rsquo;s DataMall</a>, it&rsquo;s surprising just how many of them fit&mdash;or even exceed&mdash;Lim Hwee Hwa&rsquo;s benchmark of 20&ndash;37 km. The longest service by distance between first and last stops is <a href="https://www.transitlink.com.sg/eservice/eguide/service_route.php?service=858" target="_blank">Tower Transit&rsquo;s 858 service</a>, covering a staggering total of 73.4 km over 75 stops. Many of these longest routes are also old ones, if the prevalence of two-digit numbers among the top 20 is anything to go by. Several of them are special services. Route numbers in the 500s are specific long-distance routes operated by private companies directly to the CBD; while routes containing an &lsquo;N&rsquo; are night services operating from 11pm&ndash;2am.
+            Looking at the 555 bus routes provided by <a href="https://DataMall.lta.gov.sg/content/DataMall/en.html" target="_blank">LTA&rsquo;s DataMall</a>, it&rsquo;s surprising just how many of them fit&mdash;or even exceed&mdash;Lim Hwee Hwa&rsquo;s benchmark of 20&ndash;37 km. The longest service by distance between first and last stops is <a href="https://www.transitlink.com.sg/eservice/eguide/service_route.php?service=858" target="_blank">Tower Transit&rsquo;s 858 service</a>, covering a staggering total of 73.4 km over 75 stops. Many of these longest routes are also old ones, if the prevalence of two-digit numbers among the top 20 is anything to go by. Several of them are special services. Route numbers in the 500s are specific long-distance routes operated by private companies directly to the CBD; while routes containing an &lsquo;N&rsquo; are night services operating from 11pm&ndash;2am.
         </p>
         <p style="font-style:italic;">
             Note: A lot of these routes go by highways, which results in weird jagged lines when rendered in this map. The DataMall API only allows us to query bus routes by their individual stops, not the path they take.
@@ -120,7 +123,7 @@
             It&rsquo;s also clear that long bus routes provide excellent redundancy to Singapore&rsquo;s transport system&mdash;always a good thing, if the engineering podcast I listen to is anything to go by. Then-Minister for Transport Ong Ye Kung has <a href="(https://sprs.parl.gov.sg/search/sprs3topic?reportid=budget-1629)" target="_blank">admitted as much in Parliament</a> when he said that long routes remain a solid backbone to our transport network, even when most of them run at a loss. Most of our routes, in fact, are trunk routes, despite the speed and geographical extent of our rail lines. Shorter routes <a href="https://sprs.parl.gov.sg/search/topic?reportid=008_20100816_S0006_T0004" target="_blank">aren&rsquo;t necessarily more cost-effective</a> due to the limiting factors of fleet maintenance and drivers&rsquo; wages (as much as Minister Ang Wei Neng <a href="https://sprs.parl.gov.sg/search/sprs3topic?reportid=budget-1585" target="_blank">would like to think otherwise</a>). And even if shorter services are more reliable, one can&rsquo;t deny the added perceived annoyance and trip variability that multiple, brief transfers can add to an otherwise-seamless journey. If you&rsquo;re searching for an station entrance, crossing to a bus stop, or waiting for a couple of bunched-up feeders in a strange neighbourhood, all that wait time is going to add up.
         </p>
         <p>
-            What the number can&rsquo;t tell us, however, are the associated impressions of mobility that have run deep over the years along these long bus lines. I can&rsquo;t tell you how many times the 162 has saved my life running past midnight along Plaza Singapura on a Friday night, or the weekly relief at taking the 52 back down Marymount Road from Maju Camp. It can&rsquo;t tell you how I know the shape of the 410 both ways from the drumming of my skull against the hideous beige walls. And the data is silent on that one elderly man in Tanglin Halt, who can no longer take the bus from his doorstep to visit his old friends all along the southwest coast, from Clementi to Redhill and beyond&hellip;
+            What the numbers can&rsquo;t tell us, however, are the associated impressions of mobility that have run deep over the years along these long bus lines. I can&rsquo;t tell you how many times the 162 has saved my life running past midnight along Plaza Singapura on a Friday night, or the weekly relief at taking the 52 back down Marymount Road from Maju Camp. It can&rsquo;t tell you how I know the shape of the 410 both ways from the drumming of my skull against the hideous beige walls. And the data is silent on that one elderly man in Tanglin Halt, who can no longer take the bus from his doorstep to visit his old friends all along the southwest coast, from Clementi to Redhill and beyond&hellip;
         </p>
         <p>
             All this, too, is part of the data. The stories and the numbers don&rsquo;t lie. In our hearts and on our roads, the long bus ride is here to stay. :)
