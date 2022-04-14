@@ -80,10 +80,10 @@ Promise.all(
     let stop_counts = data[3];
     let ranges = {};
 
-    console.log(basemap);
-    console.log(routes);
-    console.log(stop_coords);
-    console.log(stop_counts);
+    // console.log(basemap);
+    // console.log(routes);
+    // console.log(stop_coords);
+    // console.log(stop_counts);
 
     // 1. Drawing svg all_buses
         
@@ -266,11 +266,16 @@ Promise.all(
     let route_list = routes.map(({route}) => {return route});
 
     // rudimentary autocomplete as 'datalist' - works on desktop and some mobiles
+    // first, sort route_list by pseudo-numeric order
+    let route_list_numeric = route_list.sort((a,b) => {
+        return a.replace(/[a-zA-Z ]/g, "") - b.replace(/[a-zA-Z ]/g, "");
+    });
+    // then make the datalist
     d3.select("form.svg_ls_input")
         .append("datalist")
         .attr("id", "stops")
         .selectAll("option")
-        .data(route_list)
+        .data(route_list_numeric)
         .enter()
         .append("option")
         .attr("value", d => d)
@@ -1031,7 +1036,6 @@ Promise.all(
 
     d3.select("#hs_dropdown").on("input", function(d) {
         svg_hs_facet = this.value;
-        console.log(svg_hs_facet);
         update_hs(routes, svg_hs_bins, svg_hs_facet); // data, slice, factor
     });
 
