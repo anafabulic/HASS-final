@@ -369,8 +369,6 @@ Promise.all(
                     return exit.remove();
                 }
             )
-            .transition()
-            .duration(1000)
             .attr("d", d => 
                 "M" + projection(d.route[0].coordinates[0])[0] +
                 "," + projection(d.route[0].coordinates[0])[1] +
@@ -526,7 +524,7 @@ Promise.all(
     let svg_rl_inset_text = svg_rl_inset.append("g")
         .attr("class", "svg_rl_inset_text");
     
-    // Attach inputs
+    // Append sliders
     d3.select("div.svg_rl_slider")
         .append("input")
         .attr("type", "range")
@@ -556,6 +554,8 @@ Promise.all(
         )
     rl_scroll_resize();
     d3.select(window).on('resize', rl_scroll_resize);
+    
+    // Append dropdown selector
     let svg_rl_dropdown_form = d3.select("div.svg_rl_dropdown")
         .append("form");
     svg_rl_dropdown_form.append("label")
@@ -571,7 +571,7 @@ Promise.all(
         .attr("value", "length")
         .text("View routes by number of stops");
 
-    function update_rl(data, slice, scroll, factor) {
+    function update_rl(data, slice, scroll, factor, ms) {
         // Sort and slice
         data.sort((a,b) => {
             return b[factor] - a[factor];
@@ -616,15 +616,15 @@ Promise.all(
 
         // Setup axes
         svg_rl_x.transition()
-            .duration(1000)
+            .duration(750)
             .call(d3.axisTop(x_scale))
             .attr("transform", "translate(0," + (h * -0.02) + ")");
         svg_rl_x2.transition()
-            .duration(1000)
+            .duration(750)
             .call(d3.axisBottom(x_scale))
             .attr("transform", "translate(0," + (h * 0.88) + ")");
         svg_rl_y.transition()
-            .duration(500) // snappier transition = illusion of control
+            .duration(400) // snappier transition = illusion of control
             .call(d3.axisLeft(y_scale)
             .tickSizeInner(0));
         
@@ -674,7 +674,7 @@ Promise.all(
                 }
             )
             .transition()
-            .duration(1000)
+            .duration(ms)
             .attr("width", d => `${x_scale(d[factor])}px`)
             .attr("height", d => {
                 if (
@@ -713,7 +713,7 @@ Promise.all(
                 }
             )
             .transition()
-            .duration(1000)
+            .duration(ms)
             .attr("r", d => {
                 if (slice <= svg_rl_viewlimit2) {
                     return (((1-(slice/svg_rl_viewlimit2))*2.5)+2) + "px";
@@ -847,24 +847,30 @@ Promise.all(
     let svg_rl_facet = "max_km"; // length or max_km
     let svg_rl_slice = svg_rl_init;
     let svg_rl_scroll = 0;
-    update_rl(routes, svg_rl_init, 0, svg_rl_facet); // initialise
+    update_rl(routes, svg_rl_init, 0, svg_rl_facet, 0); // initialise
 
-    // listen for events
+    // listen for zoom slider events
     d3.select("#rl_slider").on("input", function(d) {
         let raw_value = this.value;
         svg_rl_slice = svg_rl_parse_slide(raw_value);
-        update_rl(routes, svg_rl_slice, svg_rl_scroll, svg_rl_facet); // data, slice, factor
+        let x0 =   0, y0 = 15;
+        let x1 = 100, y1 = document.getElementById("route_lengths").clientHeight*0.9;
+        let thumb_height = (y0 + ((y1-y0)/(x1-x0)*((svg_rl_slice/routes.length*100)-x0)) );
+        document.documentElement.style.setProperty("--thumb_height", `${thumb_height}px`);
+        update_rl(routes, svg_rl_slice, svg_rl_scroll, svg_rl_facet, 1000); // data, slice, factor
     });
 
+    // listen for scroller events
     d3.select("#rl_scroller").on("input", function(d) {
         let raw_value = this.value;
         svg_rl_scroll = svg_rl_parse_scroll(raw_value);
-        update_rl(routes, svg_rl_slice, svg_rl_scroll, svg_rl_facet); // data, slice, factor
+        update_rl(routes, svg_rl_slice, svg_rl_scroll, svg_rl_facet, 250); // data, slice, factor
     });
 
+    // listen for dropdown faceting events
     d3.select("#rl_dropdown").on("input", function(d) {
         svg_rl_facet = this.value;
-        update_rl(routes, svg_rl_slice, svg_rl_scroll, svg_rl_facet); // data, slice, factor
+        update_rl(routes, svg_rl_slice, svg_rl_scroll, svg_rl_facet, 750); // data, slice, factor
     });
 
 
@@ -932,8 +938,8 @@ Promise.all(
             .domain([0, d3.max(bars, d => d.length)])
             .nice();
         
-        svg_hs_x.transition().duration(1000).call(d3.axisBottom(x_scale));
-        svg_hs_y.transition().duration(1000).call(d3.axisLeft(y_scale));
+        svg_hs_x.transition().duration(750).call(d3.axisBottom(x_scale));
+        svg_hs_y.transition().duration(750).call(d3.axisLeft(y_scale));
         svg_hs_x_lab.text(d => {if (factor == "max_km") {return "km"} else {return "stops"}});
         
         svg_hs_chart_bars.selectAll("rect")
@@ -956,7 +962,7 @@ Promise.all(
             )
             .attr("class", "svg_hs_bars")
             .transition()
-            .duration(1000)
+            .duration(750)
             .attr("height", d => (h * 0.8) - y_scale(d.length))
             .attr("transform", d => "translate(" + x_scale(d.x0) + "," + y_scale(d.length) + ")" );
         

@@ -199,14 +199,17 @@ input[type=text] {
     height: 15px;
     border-radius: 50%; 
     background: var(--org);
-    cursor: e-resize;
+    cursor: ew-resize;
 }
 .slider::-moz-range-thumb {
     width: 15px;
     height: 15px;
     border-radius: 50%;
     background: var(--org);
-    cursor: e-resize;
+    cursor: ew-resize;
+}
+html {
+    --thumb_height: 15px;
 }
 .scroller .vertical input[type="range"] {
     position: absolute;
@@ -228,16 +231,18 @@ input[type=text] {
 .scroller::-webkit-slider-thumb {
     -webkit-appearance: none;
     appearance: none;
-    width: 15px;
-    height: 15px;
-    border-radius: 50%; 
+    width: 5px;
+    /* height: 15px; */
+    height: var(--thumb_height);
+    border-radius: 3px; 
     background: var(--org);
-    cursor: n-resize;
+    cursor: ns-resize;
 }
 .scroller::-moz-range-thumb {
-    width: 15px;
-    height: 15px;
-    border-radius: 50%; 
+    width: 5px;
+    /* height: 15px; */
+    height: var(--thumb_height);
+    border-radius: 2.5px; 
     background: var(--org);
-    cursor: n-resize;
+    cursor: ns-resize;
 }
