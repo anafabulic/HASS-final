@@ -45,7 +45,7 @@ p {
     margin: 0 10% 3%;
 }
 small {
-    font-family: 'Inconsolata';
+    font-family: 'Inconsolata', sans-serif;
 }
 a:link    {color: var(--org_d); text-decoration: none;}
 a:visited {color: var(--red); }
